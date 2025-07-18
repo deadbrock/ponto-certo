@@ -1,0 +1,21 @@
+{
+  "extends": "@react-native/typescript-config/tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "react-native"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false
+  },
+  "include": [
+    "src/**/*",
+    "__tests__/**/*",
+    "*.ts",
+    "*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "android",
+    "ios"
+  ]
+}

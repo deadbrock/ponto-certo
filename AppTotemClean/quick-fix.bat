@@ -1,0 +1,6 @@
+@echo off
+echo Instalando CLI do React Native...
+npm install @react-native-community/cli@13.6.0 --save-dev --force
+echo.
+echo ✅ CLI instalado! Tentando build...
+npm run android 

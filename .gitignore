@@ -1,1 +1,4 @@
-node_modules
+ AppTotem/
+     AppTotemClean/
+     app-totem/
+     *.apk

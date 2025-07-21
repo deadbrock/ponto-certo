@@ -3,8 +3,10 @@ export const appConfig = {
   // Modo de desenvolvimento - configurar para false em produção
   MOCK_DATA_ENABLED: false, // ✅ DESABILITADO - usando dados reais
   
-  // URLs do backend
-  BACKEND_URL: 'http://localhost:3333/api',
+  // URLs do backend - automaticamente detecta ambiente
+  BACKEND_URL: process.env.NODE_ENV === 'production' 
+    ? process.env.REACT_APP_BACKEND_URL || 'https://SEU_BACKEND_URL.railway.app/api'
+    : 'http://localhost:3333/api',
   
   // Configurações de autenticação
   AUTH_TOKEN_KEY: 'token',
@@ -21,6 +23,9 @@ export const appConfig = {
   
   // Timeouts e configurações de rede
   API_TIMEOUT: 10000, // 10 segundos
+  
+  // Configurações de produção
+  PRODUCTION_MODE: process.env.NODE_ENV === 'production',
   
   // Mensagens para o usuário
   MESSAGES: {
@@ -44,4 +49,9 @@ export const getApiBaseUrl = (): string => {
 // Função para verificar se está em modo debug
 export const isDebugMode = (): boolean => {
   return appConfig.DEBUG_MODE;
+};
+
+// Função para verificar se está em produção
+export const isProductionMode = (): boolean => {
+  return appConfig.PRODUCTION_MODE;
 }; 

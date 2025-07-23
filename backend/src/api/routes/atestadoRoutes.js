@@ -5,8 +5,20 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 router.use(authMiddleware);
 
+/**
+ * Rotas de Atestados - CRUD Completo
+ */
+
+// GET /api/atestados - Listar atestados com filtros
 router.get('/', atestadoController.listarAtestados);
-router.patch('/:id/aprovar', atestadoController.aprovarAtestado);
-router.patch('/:id/rejeitar', atestadoController.rejeitarAtestado);
+
+// POST /api/atestados - Criar novo atestado
+router.post('/', atestadoController.criarAtestado);
+
+// PUT /api/atestados/:id/status - Atualizar status do atestado
+router.put('/:id/status', atestadoController.atualizarStatusAtestado);
+
+// GET /api/atestados/estatisticas - Estatísticas de atestados
+router.get('/estatisticas', atestadoController.obterEstatisticasAtestados);
 
 module.exports = router; 

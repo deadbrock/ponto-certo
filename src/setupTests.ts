@@ -1,7 +1,3 @@
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
@@ -62,7 +58,44 @@ window.alert = vi.fn()
 // Mock do window.confirm
 window.confirm = vi.fn()
 
+// Mock do console para evitar logs desnecessários nos testes
+global.console = {
+  ...console,
+  log: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+}
+
+// Mock de módulos problemáticos do Material-UI
+vi.mock('@mui/x-date-pickers', () => ({
+  DatePicker: ({ value, onChange, label, ...props }: any) => (
+    <input
+      type="date"
+      value={value}
+      onChange={onChange}
+      placeholder={label}
+      data-testid="date-picker"
+      {...props}
+    />
+  ),
+  LocalizationProvider: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="localization-provider">{children}</div>
+  )
+}))
+
+// Mock do Chart.js para evitar problemas de canvas
+vi.mock('react-chartjs-2', () => ({
+  Line: () => <div data-testid="line-chart">Line Chart</div>,
+  Doughnut: () => <div data-testid="doughnut-chart">Doughnut Chart</div>,
+  Bar: () => <div data-testid="bar-chart">Bar Chart</div>
+}))
+
+// Mock do FullCalendar
+vi.mock('@fullcalendar/react', () => ({
+  default: () => <div data-testid="full-calendar">Calendar</div>
+}))
+
 // Limpar todos os mocks antes de cada teste
 beforeEach(() => {
   vi.clearAllMocks()
-})
+}) 

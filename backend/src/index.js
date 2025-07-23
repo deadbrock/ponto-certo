@@ -15,6 +15,7 @@ const escalaRoutes = require('./api/routes/escalaRoutes');
 const feriadoRoutes = require('./api/routes/feriadoRoutes');
 const configuracaoRoutes = require('./api/routes/configuracaoRoutes');
 const mapaRoutes = require('./api/routes/mapaRoutes');
+const frequenciaRoutes = require('./api/routes/frequenciaRoutes');
 
 // Novas rotas para integração 100% com painel web
 const dashboardRoutes = require('./api/routes/dashboardRoutes');
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
             escalas: '/api/escalas',
             feriados: '/api/feriados',
             configuracoes: '/api/configuracoes',
+            frequencia: '/api/frequencia',
             mapa: '/api/mapa',
             dashboard: '/api/dashboard',
             notificacoes: '/api/notificacoes',
@@ -72,6 +74,26 @@ app.use((req, res, next) => {
     next();
 });
 
+// Middleware de logging personalizado
+app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${req.method} ${req.path}`);
+    next();
+});
+
+// Middleware de CORS
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
 // Registrar rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/ponto', pontoRoutes);
@@ -84,6 +106,7 @@ app.use('/api/atestados', atestadoRoutes);
 app.use('/api/escalas', escalaRoutes);
 app.use('/api/feriados', feriadoRoutes);
 app.use('/api/configuracoes', configuracaoRoutes);
+app.use('/api/frequencia', frequenciaRoutes);
 app.use('/api/mapa', mapaRoutes);
 
 // Novas rotas para integração 100% com painel web
@@ -101,10 +124,18 @@ app.get('/db-test', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+// Testar conexão com banco ao iniciar
+app.listen(PORT, async () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
     console.log(`📱 Endpoint de reconhecimento facial: http://localhost:${PORT}/api/face-recognition/`);
     console.log(`🔍 Health check: http://localhost:${PORT}/`);
     console.log(`📊 Teste DB: http://localhost:${PORT}/db-test`);
     console.log(`🗺️ Mapa de Atuação: http://localhost:${PORT}/api/contratos/estados`);
+    
+    try {
+        const result = await db.query('SELECT NOW()');
+        console.log('✅ Conexão com PostgreSQL estabelecida:', result.rows[0].now);
+    } catch (error) {
+        console.error('❌ Erro ao conectar com PostgreSQL:', error.message);
+    }
 });

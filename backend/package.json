@@ -1,7 +1,7 @@
 {
   "name": "backend",
-  "version": "1.0.0",
-  "description": "Backend do Sistema Ponto Digital FG Services",
+  "version": "1.0.1",
+  "description": "Backend do Sistema Ponto Digital FG Services - Railway Deploy",
   "main": "src/index.js",
   "engines": {
     "node": ">=18.0.0"

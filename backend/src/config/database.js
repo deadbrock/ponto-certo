@@ -1,35 +1,49 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Configuração simples e robusta
-const dbConfig = {
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_DATABASE || 'ponto_digital_fg',
-  password: process.env.DB_PASSWORD || 'superman19',
-  port: parseInt(process.env.DB_PORT) || 5432,
-  // Configurações adicionais para resolver problemas de autenticação
-  ssl: false,
-  connectionTimeoutMillis: 10000,
-  idleTimeoutMillis: 30000,
-  max: 10,
-  // ⚡ NOVA CONFIGURAÇÃO DE TIMEZONE
-  options: '-c timezone=America/Sao_Paulo'
-};
+// Priorizar DATABASE_URL em produção (Railway)
+let dbConfig;
 
-// Garantir que a senha seja sempre uma string
-if (typeof dbConfig.password !== 'string') {
-  dbConfig.password = String(dbConfig.password || '');
+if (process.env.DATABASE_URL) {
+  // Produção - usar DATABASE_URL do Railway
+  console.log('🌐 Usando DATABASE_URL (Railway):', process.env.DATABASE_URL.replace(/:[^@]*@/, ':***@'));
+  
+  dbConfig = {
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
+    max: 10,
+  };
+} else {
+  // Desenvolvimento - usar variáveis individuais
+  console.log('🏠 Usando configuração local (desenvolvimento)');
+  
+  dbConfig = {
+    user: process.env.DB_USER || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    database: process.env.DB_DATABASE || 'ponto_digital_fg',
+    password: process.env.DB_PASSWORD || 'superman19',
+    port: parseInt(process.env.DB_PORT) || 5432,
+    ssl: false,
+    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 30000,
+    max: 10,
+  };
 }
 
 console.log('🔧 Configuração do banco:');
-console.log('   User:', dbConfig.user);
-console.log('   Host:', dbConfig.host);
-console.log('   Database:', dbConfig.database);
-console.log('   Password:', dbConfig.password ? '[DEFINIDA]' : '[VAZIA]');
-console.log('   Port:', dbConfig.port);
+if (process.env.DATABASE_URL) {
+  console.log('   Modo: PRODUÇÃO (Railway)');
+  console.log('   URL: [DATABASE_URL configurada]');
+} else {
+  console.log('   Modo: DESENVOLVIMENTO');
+  console.log('   Host:', dbConfig.host);
+  console.log('   Database:', dbConfig.database);
+  console.log('   User:', dbConfig.user);
+}
 console.log('   SSL:', dbConfig.ssl);
-console.log('   🌎 Timezone:', 'America/Sao_Paulo');
+console.log('   🌎 Timezone: America/Sao_Paulo');
 
 // Teste de conexão imediato
 console.log('🔍 Testando conexão com o banco...');
@@ -39,7 +53,7 @@ const pool = new Pool(dbConfig);
 pool.on('connect', async (client) => {
   console.log('✅ Banco de dados conectado com sucesso!');
   
-  // ⚡ CONFIGURAR TIMEZONE PARA CADA CONEXÃO
+  // Configurar timezone para cada conexão
   try {
     await client.query("SET timezone = 'America/Sao_Paulo'");
     console.log('🌎 Timezone configurado para America/Sao_Paulo');

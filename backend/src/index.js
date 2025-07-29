@@ -58,6 +58,27 @@ app.get('/', (req, res) => {
     });
 });
 
+// Rota de documentação da API
+app.get('/api', (req, res) => {
+    res.json({
+        message: 'API do Ponto Digital - Documentação',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        endpoints: {
+            auth: {
+                'POST /api/auth/login-admin': 'Login administrativo (painel web)',
+                'POST /api/auth/login': 'Login colaboradores (app)',
+                'GET /api/auth/criar-admin-emergencia': 'Criar usuário admin de emergência'
+            },
+            dashboard: 'GET /api/dashboard',
+            colaboradores: 'GET /api/colaboradores',
+            ponto: 'GET /api/ponto',
+            relatorios: 'GET /api/relatorios',
+            configuracoes: 'GET /api/configuracoes'
+        }
+    });
+});
+
 // Endpoint de teste para debug de CORS
 app.get('/api/test-cors', (req, res) => {
     res.json({

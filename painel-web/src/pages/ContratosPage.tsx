@@ -63,7 +63,7 @@ import {
   AlertaVigencia
 } from '../types/contratos';
 import AlertasVigencia from '../components/contratos/AlertasVigencia';
-import ClonagemContrato from '../components/contratos/ClonagemContrato';
+// import ClonagemContrato from '../components/contratos/ClonagemContrato'; // REMOVIDO PARA DEPLOY
 import CriacaoContrato from '../components/contratos/CriacaoContrato';
 import { ContratosExportService } from '../services/contratosExportService';
 
@@ -847,7 +847,7 @@ const ContratosPage: React.FC = () => {
       />
 
       {/* Dialog de Clonagem */}
-      <ClonagemContrato
+      {/* <ClonagemContrato
         open={showCloneDialog}
         contrato={contratoParaClonar}
         onClose={() => {
@@ -855,7 +855,7 @@ const ContratosPage: React.FC = () => {
           setContratoParaClonar(null);
         }}
         onClonar={clonarContrato}
-      />
+      /> */} {/* REMOVIDO TEMPORARIAMENTE PARA DEPLOY */}
 
       {/* Dialog de Detalhes (placeholder) */}
       <Dialog

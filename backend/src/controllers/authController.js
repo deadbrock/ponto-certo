@@ -151,7 +151,35 @@ const criarAdminEmergencia = async (req, res) => {
     try {
         console.log('🚨 Criando/verificando usuário administrador de emergência...');
         
-        // Verificar se já existe
+        // 1. Verificar se a tabela usuarios existe e tem a estrutura correta
+        try {
+            const estruturaQuery = `
+                SELECT column_name, data_type 
+                FROM information_schema.columns 
+                WHERE table_name = 'usuarios' 
+                ORDER BY ordinal_position
+            `;
+            const estruturaResult = await db.query(estruturaQuery);
+            console.log('📋 Estrutura da tabela usuarios:', estruturaResult.rows);
+            
+            // Verificar se tem o campo senha_hash
+            const temSenhaHash = estruturaResult.rows.some(col => col.column_name === 'senha_hash');
+            const temSenha = estruturaResult.rows.some(col => col.column_name === 'senha');
+            
+            console.log(`🔍 Campo senha_hash: ${temSenhaHash}, Campo senha: ${temSenha}`);
+            
+            // Se não tem senha_hash, corrigir estrutura
+            if (!temSenhaHash && temSenha) {
+                console.log('🔧 Corrigindo estrutura da tabela...');
+                await db.query('ALTER TABLE usuarios RENAME COLUMN senha TO senha_hash');
+                console.log('✅ Campo senha renomeado para senha_hash');
+            }
+            
+        } catch (estructError) {
+            console.error('❌ Erro verificando estrutura:', estructError.message);
+        }
+        
+        // 2. Verificar se já existe usuário admin
         const verificarQuery = 'SELECT * FROM usuarios WHERE email = $1';
         const verificarResult = await db.query(verificarQuery, ['admin@fgservices.com']);
         
@@ -159,30 +187,35 @@ const criarAdminEmergencia = async (req, res) => {
             console.log('✅ Usuário admin já existe!');
             const usuario = verificarResult.rows[0];
             
-            // Verificar se conseguimos fazer login com a senha admin123
-            const senhaValida = await bcrypt.compare('admin123', usuario.senha_hash);
-            
-            if (senhaValida) {
-                console.log('✅ Senha está correta!');
-                return res.status(200).json({
-                    success: true,
-                    message: 'Usuário administrador já existe e senha está correta',
-                    usuario: {
-                        id: usuario.id,
-                        nome: usuario.nome,
-                        email: usuario.email,
-                        perfil: usuario.perfil,
-                        senha_ok: true
+            // Verificar se tem senha_hash válida
+            if (usuario.senha_hash && usuario.senha_hash.length > 10) {
+                try {
+                    const senhaValida = await bcrypt.compare('admin123', usuario.senha_hash);
+                    
+                    if (senhaValida) {
+                        console.log('✅ Senha está correta!');
+                        return res.status(200).json({
+                            success: true,
+                            message: 'Usuário administrador já existe e senha está correta',
+                            usuario: {
+                                id: usuario.id,
+                                nome: usuario.nome,
+                                email: usuario.email,
+                                perfil: usuario.perfil,
+                                senha_ok: true
+                            }
+                        });
                     }
-                });
-            } else {
-                console.log('❌ Senha está incorreta, recriando usuário...');
-                // Deletar e recriar com senha correta
-                await db.query('DELETE FROM usuarios WHERE email = $1', ['admin@fgservices.com']);
+                } catch (bcryptError) {
+                    console.log('❌ Erro no bcrypt ou hash inválido:', bcryptError.message);
+                }
             }
+            
+            console.log('❌ Senha incorreta ou hash inválido, recriando usuário...');
+            await db.query('DELETE FROM usuarios WHERE email = $1', ['admin@fgservices.com']);
         }
         
-        // Criar usuário admin com senha correta
+        // 3. Criar usuário admin com senha correta
         console.log('🔒 Gerando hash para senha admin123...');
         const senhaHash = await bcrypt.hash('admin123', 10);
         console.log('✅ Hash gerado:', senhaHash.substring(0, 20) + '...');
@@ -203,7 +236,7 @@ const criarAdminEmergencia = async (req, res) => {
         
         console.log('✅ Usuário administrador criado com sucesso!');
         
-        // Testar a senha imediatamente
+        // 4. Testar a senha imediatamente
         const testarSenha = await bcrypt.compare('admin123', senhaHash);
         console.log('🧪 Teste da senha recém-criada:', testarSenha);
         
@@ -211,7 +244,8 @@ const criarAdminEmergencia = async (req, res) => {
             success: true,
             message: 'Usuário administrador criado/atualizado com sucesso',
             usuario: criarResult.rows[0],
-            senha_testada: testarSenha
+            senha_testada: testarSenha,
+            hash_gerado: senhaHash.substring(0, 20) + '...'
         });
         
     } catch (error) {
@@ -219,7 +253,8 @@ const criarAdminEmergencia = async (req, res) => {
         return res.status(500).json({
             success: false,
             error: 'Erro interno do servidor',
-            details: error.message
+            details: error.message,
+            stack: error.stack
         });
     }
 };

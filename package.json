@@ -1,15 +1,83 @@
 {
-  "devDependencies": {
-    "@types/react": "^19.1.8",
-    "@types/react-native": "^0.72.8",
-    "typescript": "^5.8.3"
-  },
+  "name": "painel-web",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fullcalendar/core": "^6.1.18",
+    "@fullcalendar/daygrid": "^6.1.18",
+    "@fullcalendar/interaction": "^6.1.18",
+    "@fullcalendar/react": "^6.1.18",
+    "@fullcalendar/timegrid": "^6.1.18",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.17.1",
     "@mui/x-date-pickers": "^8.8.0",
-    "@react-native-community/geolocation": "^3.4.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^18.19.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.12",
+    "@types/react-router-dom": "^5.3.3",
+    "axios": "^1.10.0",
     "chart.js": "^4.5.0",
+    "d3-geo": "^3.1.1",
+    "d3-geo-projection": "^4.0.0",
     "date-fns": "^4.1.0",
     "exceljs": "^4.4.0",
-    "react-chartjs-2": "^5.3.0"
-  }
+    "file-saver": "^2.0.5",
+    "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.58.1",
+    "react-router-dom": "^7.6.2",
+    "react-scripts": "5.0.1",
+    "react-simple-maps": "^3.0.0",
+    "recharts": "^2.15.3",
+    "topojson-client": "^3.1.0",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    "yup": "^1.6.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "test:run": "vitest run",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/file-saver": "^2.0.7",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^1.2.0",
+    "jsdom": "^24.0.0",
+    "vitest": "^1.2.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "msw": "^2.0.0"
+  },
+  "proxy": "http://localhost:3333"
 }

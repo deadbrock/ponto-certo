@@ -217,12 +217,12 @@ const ContratosPage: React.FC = () => {
     }
   };
 
-  // Função para clonar contrato
+  // Função para clonar contrato (TEMPORARIAMENTE DESABILITADA - ENDPOINT NÃO IMPLEMENTADO)
   const clonarContrato = async (dadosClonagem: any) => {
     try {
-      await api.post('/contratos/clonar', dadosClonagem);
-      showToast('Contrato clonado com sucesso!', 'success');
-      carregarContratos();
+      // TODO: Implementar endpoint /contratos/clonar no backend
+      // await api.post('/contratos/clonar', dadosClonagem);
+      showToast('Funcionalidade de clonagem em desenvolvimento', 'info');
       setShowCloneDialog(false);
       setContratoParaClonar(null);
     } catch (error) {
@@ -231,11 +231,13 @@ const ContratosPage: React.FC = () => {
     }
   };
 
-  // Função para marcar alerta como visualizado
+  // Função para marcar alerta como visualizado (TEMPORARIAMENTE DESABILITADA - ENDPOINT NÃO IMPLEMENTADO)
   const marcarAlertaVisualizado = async (alertaId: string) => {
     try {
-      await api.patch(`/contratos/alertas/${alertaId}/visualizar`);
-      carregarDashboard();
+      // TODO: Implementar endpoint /contratos/alertas/:id/visualizar no backend
+      // await api.patch(`/contratos/alertas/${alertaId}/visualizar`);
+      console.log('Alerta marcado como visualizado (local):', alertaId);
+      // carregarDashboard(); // Não recarregar até o endpoint existir
     } catch (error) {
       console.error('Erro ao marcar alerta como visualizado:', error);
     }

@@ -156,8 +156,8 @@ const ContratoDetalhesPage: React.FC = () => {
 
       // Carregar colaboradores disponíveis
       try {
-        const colaboradoresResponse = await api.get('/colaboradores/disponiveis');
-        setColaboradoresDisponiveis(colaboradoresResponse.data || []);
+        const colaboradoresResponse = await api.get('/colaboradores');
+        setColaboradoresDisponiveis(colaboradoresResponse.data.colaboradores || []);
       } catch (colaboradoresError) {
         console.warn('Erro ao carregar colaboradores:', colaboradoresError);
       }
@@ -189,84 +189,84 @@ const ContratoDetalhesPage: React.FC = () => {
     }
   };
 
-  // Função para adicionar colaboradores
+  // Função para adicionar colaboradores (TEMPORARIAMENTE DESABILITADA - ENDPOINT NÃO IMPLEMENTADO)
   const adicionarColaboradores = async () => {
     if (!contrato || selectedColaboradores.length === 0) return;
 
     try {
-      await api.post(`/contratos/${contrato.id}/colaboradores`, { 
-        colaboradorIds: selectedColaboradores.map(c => c.id) 
-      });
+      // TODO: Implementar endpoint /contratos/:id/colaboradores no backend
+      // await api.post(`/contratos/${contrato.id}/colaboradores`, { 
+      //   colaboradorIds: selectedColaboradores.map(c => c.id) 
+      // });
 
-      showToast(`${selectedColaboradores.length} colaborador(es) adicionado(s)!`, 'success');
+      showToast('Funcionalidade de colaboradores em desenvolvimento', 'info');
       setShowAddColaborador(false);
       setSelectedColaboradores([]);
-      carregarContrato();
+      // carregarContrato();
     } catch (error) {
       showToast('Erro ao adicionar colaboradores', 'error');
       console.error('Erro ao adicionar colaboradores:', error);
     }
   };
 
-  // Função para remover colaborador
+  // Função para remover colaborador (TEMPORARIAMENTE DESABILITADA - ENDPOINT NÃO IMPLEMENTADO)
   const removerColaborador = async (colaboradorId: string) => {
     if (!contrato) return;
 
     try {
-      await api.delete(`/contratos/${contrato.id}/colaboradores/${colaboradorId}`);
-      showToast('Colaborador removido do contrato!', 'success');
-      carregarContrato();
+      // TODO: Implementar endpoint /contratos/:id/colaboradores/:colaboradorId no backend
+      // await api.delete(`/contratos/${contrato.id}/colaboradores/${colaboradorId}`);
+      showToast('Funcionalidade de remoção em desenvolvimento', 'info');
+      // carregarContrato();
     } catch (error) {
       showToast('Erro ao remover colaborador', 'error');
       console.error('Erro ao remover colaborador:', error);
     }
   };
 
-  // Função para upload de documento
+  // Função para upload de documento (TEMPORARIAMENTE DESABILITADA - ENDPOINT NÃO IMPLEMENTADO)
   const uploadDocumento = async () => {
     if (!contrato || !uploadFile || !docNome) return;
 
-    const formData = new FormData();
-    formData.append('file', uploadFile);
-    formData.append('tipo', docTipo);
-    formData.append('nome', docNome);
-
     try {
-      await api.post(`/contratos/${contrato.id}/documentos`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // TODO: Implementar endpoint /contratos/:id/documentos no backend
+      // const formData = new FormData();
+      // formData.append('file', uploadFile);
+      // formData.append('tipo', docTipo);
+      // formData.append('nome', docNome);
+      // await api.post(`/contratos/${contrato.id}/documentos`, formData, {
+      //   headers: { 'Content-Type': 'multipart/form-data' },
+      // });
 
-      showToast('Documento enviado com sucesso!', 'success');
+      showToast('Funcionalidade de documentos em desenvolvimento', 'info');
       setShowUploadDoc(false);
       setUploadFile(null);
       setDocNome('');
-      carregarContrato();
+      // carregarContrato();
     } catch (error) {
       showToast('Erro ao enviar documento', 'error');
       console.error('Erro ao upload documento:', error);
     }
   };
 
-  // Função para exportar relatório
+  // Função para exportar relatório (TEMPORARIAMENTE DESABILITADA - ENDPOINT NÃO IMPLEMENTADO)
   const exportarRelatorio = async () => {
     if (!contrato) return;
 
     try {
-      const response = await api.get(`/contratos/${contrato.id}/relatorio`, {
-        responseType: 'blob',
-        headers: { 'Accept': 'application/pdf' }
-      });
-
-      const blob = response.data;
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `relatorio_${contrato.nome.replace(/\s+/g, '_')}.pdf`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-      showToast('Relatório gerado com sucesso!', 'success');
+      // TODO: Implementar endpoint /contratos/:id/relatorio no backend
+      // const response = await api.get(`/contratos/${contrato.id}/relatorio`, {
+      //   responseType: 'blob',
+      //   headers: { 'Accept': 'application/pdf' }
+      // });
+      // const blob = response.data;
+      // const url = window.URL.createObjectURL(blob);
+      // const link = document.createElement('a');
+      // link.href = url;
+      // link.download = `relatorio_${contrato.nome.replace(/\s+/g, '_')}.pdf`;
+      // link.click();
+      // window.URL.revokeObjectURL(url);
+      showToast('Funcionalidade de relatórios em desenvolvimento', 'info');
     } catch (error) {
       showToast('Erro ao gerar relatório', 'error');
       console.error('Erro ao gerar relatório:', error);

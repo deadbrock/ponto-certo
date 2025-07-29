@@ -3,6 +3,7 @@ import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Stack, Link
 } from '@mui/material';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import api from '../services/api';
 
 interface Webhook {
   id: number;
@@ -22,14 +23,8 @@ const IntegracoesPage: React.FC = () => {
   const carregarWebhooks = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/integracoes/webhooks`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setWebhooks(data.webhooks || []);
-      } else {
-        setWebhooks([]);
-      }
+      const response = await api.get('/integracoes/webhooks');
+      setWebhooks(response.data.webhooks || []);
     } catch (error) {
       console.error('Erro ao carregar webhooks:', error);
       setWebhooks([]);

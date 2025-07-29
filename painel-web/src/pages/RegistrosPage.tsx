@@ -7,6 +7,7 @@ import GetAppIcon from '@mui/icons-material/GetApp';
 import TableViewIcon from '@mui/icons-material/TableView';
 import PeopleIcon from '@mui/icons-material/People';
 import { buscarRegistrosPontoApi } from '../services/api';
+import api from '../services/api';
 import { ExcelService, RegistroPonto as RegistroExcel, ColaboradorResumo } from '../services/excelService';
 
 interface RegistroPonto {
@@ -109,16 +110,14 @@ const RegistrosPage: React.FC = () => {
   const exportarRelatorioPresenca = async () => {
     setLoadingExport(true);
     try {
-      // Buscar dados reais do backend
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/relatorios/presenca-colaboradores`);
-      
+      // Buscar dados reais do backend usando API autenticada
       let colaboradores: ColaboradorResumo[] = [];
       
-      if (response.ok) {
-        const data = await response.json();
-        colaboradores = data.colaboradores || [];
-      } else {
-        console.warn('Erro ao carregar dados do backend, usando dados vazios');
+      try {
+        const response = await api.get('/relatorios/presenca-colaboradores');
+        colaboradores = response.data.colaboradores || [];
+      } catch (error) {
+        console.warn('Erro ao carregar dados do backend, usando dados vazios', error);
       }
 
       const hoje = new Date();

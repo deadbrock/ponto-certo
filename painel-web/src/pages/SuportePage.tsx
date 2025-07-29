@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import DescriptionIcon from '@mui/icons-material/Description';
+import api from '../services/api';
 
 interface Chamado {
   id: number;
@@ -27,14 +28,8 @@ const SuportePage: React.FC = () => {
   const carregarChamados = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/suporte/chamados`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setChamados(data.chamados || []);
-      } else {
-        setChamados([]);
-      }
+      const response = await api.get('/suporte/chamados');
+      setChamados(response.data.chamados || []);
     } catch (error) {
       console.error('Erro ao carregar chamados:', error);
       setChamados([]);
@@ -48,26 +43,15 @@ const SuportePage: React.FC = () => {
     
     try {
       setEnviado(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/suporte/chamados`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          assunto,
-          mensagem
-        })
+      await api.post('/suporte/chamados', {
+        assunto,
+        mensagem
       });
 
-      if (response.ok) {
-        setAssunto('');
-        setMensagem('');
-        carregarChamados(); // Recarregar lista de chamados
-        setTimeout(() => setEnviado(false), 2000);
-      } else {
-        alert('Erro ao enviar chamado');
-        setEnviado(false);
-      }
+      setAssunto('');
+      setMensagem('');
+      carregarChamados(); // Recarregar lista de chamados
+      setTimeout(() => setEnviado(false), 2000);
     } catch (error) {
       console.error('Erro ao enviar chamado:', error);
       alert('Erro de conexão ao enviar chamado');

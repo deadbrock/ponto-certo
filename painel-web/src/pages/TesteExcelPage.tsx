@@ -11,6 +11,7 @@ import {
   Download as DownloadIcon
 } from '@mui/icons-material';
 import { ExcelService, RegistroPonto as RegistroExcel, ColaboradorResumo } from '../services/excelService';
+import api from '../services/api';
 
 const TesteExcelPage: React.FC = () => {
   const [loading, setLoading] = useState<string | null>(null);
@@ -28,15 +29,14 @@ const TesteExcelPage: React.FC = () => {
   const testarRegistrosDetalhados = async () => {
     showLoading('registros');
     try {
-      // Buscar dados reais do backend
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/relatorios/registros-detalhados`);
+      // Buscar dados reais do backend usando API autenticada
       let registros: RegistroExcel[] = [];
       
-      if (response.ok) {
-        const data = await response.json();
-        registros = data.registros || [];
-      } else {
-        console.warn('Backend não disponível, usando dados vazios');
+      try {
+        const response = await api.get('/relatorios/registros-detalhados');
+        registros = response.data.registros || [];
+      } catch (error) {
+        console.warn('Backend não disponível, usando dados vazios', error);
       }
 
       await ExcelService.exportarRegistrosPonto(
@@ -58,15 +58,14 @@ const TesteExcelPage: React.FC = () => {
   const testarRelatorioPresenca = async () => {
     showLoading('presenca');
     try {
-      // Buscar dados reais do backend
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/relatorios/presenca-colaboradores`);
+      // Buscar dados reais do backend usando API autenticada
       let colaboradores: ColaboradorResumo[] = [];
       
-      if (response.ok) {
-        const data = await response.json();
-        colaboradores = data.colaboradores || [];
-      } else {
-        console.warn('Backend não disponível, usando dados vazios');
+      try {
+        const response = await api.get('/relatorios/presenca-colaboradores');
+        colaboradores = response.data.colaboradores || [];
+      } catch (error) {
+        console.warn('Backend não disponível, usando dados vazios', error);
       }
 
       await ExcelService.exportarRelatorioPresenca(colaboradores, 'Janeiro 2025');

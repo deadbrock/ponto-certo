@@ -6,6 +6,7 @@ import BackupIcon from '@mui/icons-material/Backup';
 import DevicesIcon from '@mui/icons-material/Devices';
 import SyncIcon from '@mui/icons-material/Sync';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import api from '../services/api';
 
 interface Dispositivo {
   id: string;
@@ -29,16 +30,9 @@ const ConfiguracoesInfraPage: React.FC = () => {
   const carregarDispositivos = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/configuracoes/dispositivos`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setDispositivos(data.dispositivos || []);
-        setError(null);
-      } else {
-        setError('Erro ao carregar dados do servidor');
-        setDispositivos([]);
-      }
+      const response = await api.get('/configuracoes/dispositivos');
+      setDispositivos(response.data.dispositivos || []);
+      setError(null);
     } catch (error) {
       console.error('Erro ao carregar dispositivos:', error);
       setError('Erro de conexão com o servidor');
@@ -50,15 +44,8 @@ const ConfiguracoesInfraPage: React.FC = () => {
 
   const realizarBackup = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/configuracoes/backup`, {
-        method: 'POST'
-      });
-      
-      if (response.ok) {
-        alert('Backup realizado com sucesso!');
-      } else {
-        alert('Erro ao realizar backup');
-      }
+      await api.post('/configuracoes/backup');
+      alert('Backup realizado com sucesso!');
     } catch (error) {
       console.error('Erro ao realizar backup:', error);
       alert('Erro de conexão ao realizar backup');
@@ -67,15 +54,8 @@ const ConfiguracoesInfraPage: React.FC = () => {
 
   const agendarBackup = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/configuracoes/backup/agendar`, {
-        method: 'POST'
-      });
-      
-      if (response.ok) {
-        alert('Backup agendado com sucesso!');
-      } else {
-        alert('Erro ao agendar backup');
-      }
+      await api.post('/configuracoes/backup/agendar');
+      alert('Backup agendado com sucesso!');
     } catch (error) {
       console.error('Erro ao agendar backup:', error);
       alert('Erro de conexão ao agendar backup');

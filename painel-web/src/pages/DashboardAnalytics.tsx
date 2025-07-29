@@ -21,6 +21,7 @@ import {
 import { Line, Pie } from 'react-chartjs-2';
 import { format, subDays, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import api from '../services/api';
 
 // Registrar componentes do Chart.js
 ChartJS.register(
@@ -71,37 +72,25 @@ const DashboardAnalytics: React.FC = () => {
     try {
       setLoading(true);
       
-      // Carregar dados reais do backend
+      // Carregar dados reais do backend usando API com autenticação
       const [presencaResponse, tiposBatidaResponse, rankingResponse, estatisticasResponse] = await Promise.all([
-        fetch('http://localhost:3333/api/analytics/presenca-30-dias'),
-        fetch('http://localhost:3333/api/analytics/tipos-batida'),
-        fetch('http://localhost:3333/api/analytics/ranking-colaboradores'),
-        fetch('http://localhost:3333/api/analytics/estatisticas-gerais')
+        api.get('/analytics/presenca-30-dias'),
+        api.get('/analytics/tipos-batida'),
+        api.get('/analytics/ranking-colaboradores'),
+        api.get('/analytics/estatisticas-gerais')
       ]);
 
       // Processar dados de presença
-      if (presencaResponse.ok) {
-        const presencaData = await presencaResponse.json();
-        setPresencaUltimos30Dias(presencaData.dados || []);
-      }
+      setPresencaUltimos30Dias(presencaResponse.data.dados || []);
 
       // Processar dados de tipos de batida
-      if (tiposBatidaResponse.ok) {
-        const tiposData = await tiposBatidaResponse.json();
-        setTiposBatida(tiposData.dados || []);
-      }
+      setTiposBatida(tiposBatidaResponse.data.dados || []);
 
       // Processar ranking de colaboradores
-      if (rankingResponse.ok) {
-        const rankingData = await rankingResponse.json();
-        setRankingColaboradores(rankingData.dados || []);
-      }
+      setRankingColaboradores(rankingResponse.data.dados || []);
 
       // Processar estatísticas gerais
-      if (estatisticasResponse.ok) {
-        const estatisticasData = await estatisticasResponse.json();
-        setEstatisticasGerais(estatisticasData.dados || {});
-      }
+      setEstatisticasGerais(estatisticasResponse.data.dados || {});
 
     } catch (error) {
       console.error('Erro ao carregar dados de analytics:', error);

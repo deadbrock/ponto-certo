@@ -29,7 +29,7 @@ const ConfiguracoesInfraPage: React.FC = () => {
   const carregarDispositivos = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3333/api/configuracoes/dispositivos');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/configuracoes/dispositivos`);
       
       if (response.ok) {
         const data = await response.json();
@@ -50,7 +50,7 @@ const ConfiguracoesInfraPage: React.FC = () => {
 
   const realizarBackup = async () => {
     try {
-      const response = await fetch('http://localhost:3333/api/configuracoes/backup', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/configuracoes/backup`, {
         method: 'POST'
       });
       
@@ -67,7 +67,7 @@ const ConfiguracoesInfraPage: React.FC = () => {
 
   const agendarBackup = async () => {
     try {
-      const response = await fetch('http://localhost:3333/api/configuracoes/backup/agendar', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/configuracoes/backup/agendar`, {
         method: 'POST'
       });
       

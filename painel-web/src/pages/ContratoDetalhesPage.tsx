@@ -72,6 +72,7 @@ import { ptBR } from 'date-fns/locale';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import api from '../services/api';
 import {
   Contrato,
   Colaborador,
@@ -141,27 +142,24 @@ const ContratoDetalhesPage: React.FC = () => {
       setError(null);
 
       // Carregar contrato
-      const contratoResponse = await fetch(`/api/contratos/${id}`);
-      if (contratoResponse.ok) {
-        const contratoData = await contratoResponse.json();
-        setContrato(contratoData);
-        setEditData(contratoData);
-      } else {
-        throw new Error('Contrato não encontrado');
-      }
+      const contratoResponse = await api.get(`/contratos/${id}`);
+      setContrato(contratoResponse.data);
+      setEditData(contratoResponse.data);
 
       // Carregar KPIs
-      const kpisResponse = await fetch(`/api/contratos/${id}/kpis`);
-      if (kpisResponse.ok) {
-        const kpisData = await kpisResponse.json();
-        setKpis(kpisData);
+      try {
+        const kpisResponse = await api.get(`/contratos/${id}/kpis`);
+        setKpis(kpisResponse.data);
+      } catch (kpisError) {
+        console.warn('Erro ao carregar KPIs:', kpisError);
       }
 
       // Carregar colaboradores disponíveis
-      const colaboradoresResponse = await fetch('/api/colaboradores/disponiveis');
-      if (colaboradoresResponse.ok) {
-        const colaboradoresData = await colaboradoresResponse.json();
-        setColaboradoresDisponiveis(colaboradoresData || []);
+      try {
+        const colaboradoresResponse = await api.get('/colaboradores/disponiveis');
+        setColaboradoresDisponiveis(colaboradoresResponse.data || []);
+      } catch (colaboradoresError) {
+        console.warn('Erro ao carregar colaboradores:', colaboradoresError);
       }
 
     } catch (error) {
@@ -181,19 +179,10 @@ const ContratoDetalhesPage: React.FC = () => {
     if (!contrato || !id) return;
 
     try {
-      const response = await fetch(`/api/contratos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editData)
-      });
-
-      if (response.ok) {
-        showToast('Contrato atualizado com sucesso!', 'success');
-        setIsEditing(false);
-        carregarContrato();
-      } else {
-        throw new Error('Erro ao salvar alterações');
-      }
+      await api.put(`/contratos/${id}`, editData);
+      showToast('Contrato atualizado com sucesso!', 'success');
+      setIsEditing(false);
+      carregarContrato();
     } catch (error) {
       showToast('Erro ao salvar alterações', 'error');
       console.error('Erro ao salvar contrato:', error);
@@ -205,22 +194,14 @@ const ContratoDetalhesPage: React.FC = () => {
     if (!contrato || selectedColaboradores.length === 0) return;
 
     try {
-      const response = await fetch(`/api/contratos/${contrato.id}/colaboradores`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          colaboradorIds: selectedColaboradores.map(c => c.id) 
-        })
+      await api.post(`/contratos/${contrato.id}/colaboradores`, { 
+        colaboradorIds: selectedColaboradores.map(c => c.id) 
       });
 
-      if (response.ok) {
-        showToast(`${selectedColaboradores.length} colaborador(es) adicionado(s)!`, 'success');
-        setShowAddColaborador(false);
-        setSelectedColaboradores([]);
-        carregarContrato();
-      } else {
-        throw new Error('Erro ao adicionar colaboradores');
-      }
+      showToast(`${selectedColaboradores.length} colaborador(es) adicionado(s)!`, 'success');
+      setShowAddColaborador(false);
+      setSelectedColaboradores([]);
+      carregarContrato();
     } catch (error) {
       showToast('Erro ao adicionar colaboradores', 'error');
       console.error('Erro ao adicionar colaboradores:', error);
@@ -232,16 +213,9 @@ const ContratoDetalhesPage: React.FC = () => {
     if (!contrato) return;
 
     try {
-      const response = await fetch(`/api/contratos/${contrato.id}/colaboradores/${colaboradorId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        showToast('Colaborador removido do contrato!', 'success');
-        carregarContrato();
-      } else {
-        throw new Error('Erro ao remover colaborador');
-      }
+      await api.delete(`/contratos/${contrato.id}/colaboradores/${colaboradorId}`);
+      showToast('Colaborador removido do contrato!', 'success');
+      carregarContrato();
     } catch (error) {
       showToast('Erro ao remover colaborador', 'error');
       console.error('Erro ao remover colaborador:', error);
@@ -258,20 +232,17 @@ const ContratoDetalhesPage: React.FC = () => {
     formData.append('nome', docNome);
 
     try {
-      const response = await fetch(`/api/contratos/${contrato.id}/documentos`, {
-        method: 'POST',
-        body: formData
+      await api.post(`/contratos/${contrato.id}/documentos`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
-      if (response.ok) {
-        showToast('Documento enviado com sucesso!', 'success');
-        setShowUploadDoc(false);
-        setUploadFile(null);
-        setDocNome('');
-        carregarContrato();
-      } else {
-        throw new Error('Erro ao enviar documento');
-      }
+      showToast('Documento enviado com sucesso!', 'success');
+      setShowUploadDoc(false);
+      setUploadFile(null);
+      setDocNome('');
+      carregarContrato();
     } catch (error) {
       showToast('Erro ao enviar documento', 'error');
       console.error('Erro ao upload documento:', error);
@@ -283,23 +254,19 @@ const ContratoDetalhesPage: React.FC = () => {
     if (!contrato) return;
 
     try {
-      const response = await fetch(`/api/contratos/${contrato.id}/relatorio`, {
-        method: 'GET',
+      const response = await api.get(`/contratos/${contrato.id}/relatorio`, {
+        responseType: 'blob',
         headers: { 'Accept': 'application/pdf' }
       });
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `relatorio_${contrato.nome.replace(/\s+/g, '_')}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-        showToast('Relatório gerado com sucesso!', 'success');
-      } else {
-        throw new Error('Erro ao gerar relatório');
-      }
+      const blob = response.data;
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `relatorio_${contrato.nome.replace(/\s+/g, '_')}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      showToast('Relatório gerado com sucesso!', 'success');
     } catch (error) {
       showToast('Erro ao gerar relatório', 'error');
       console.error('Erro ao gerar relatório:', error);

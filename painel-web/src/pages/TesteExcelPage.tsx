@@ -29,7 +29,7 @@ const TesteExcelPage: React.FC = () => {
     showLoading('registros');
     try {
       // Buscar dados reais do backend
-      const response = await fetch('http://localhost:3333/api/relatorios/registros-detalhados');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/relatorios/registros-detalhados`);
       let registros: RegistroExcel[] = [];
       
       if (response.ok) {
@@ -59,7 +59,7 @@ const TesteExcelPage: React.FC = () => {
     showLoading('presenca');
     try {
       // Buscar dados reais do backend
-      const response = await fetch('http://localhost:3333/api/relatorios/presenca-colaboradores');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/relatorios/presenca-colaboradores`);
       let colaboradores: ColaboradorResumo[] = [];
       
       if (response.ok) {

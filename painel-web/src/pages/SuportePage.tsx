@@ -27,7 +27,7 @@ const SuportePage: React.FC = () => {
   const carregarChamados = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3333/api/suporte/chamados');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/suporte/chamados`);
       
       if (response.ok) {
         const data = await response.json();
@@ -48,7 +48,7 @@ const SuportePage: React.FC = () => {
     
     try {
       setEnviado(true);
-      const response = await fetch('http://localhost:3333/api/suporte/chamados', {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/suporte/chamados`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

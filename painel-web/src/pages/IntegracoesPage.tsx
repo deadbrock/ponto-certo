@@ -22,7 +22,7 @@ const IntegracoesPage: React.FC = () => {
   const carregarWebhooks = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3333/api/integracoes/webhooks');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/integracoes/webhooks`);
       
       if (response.ok) {
         const data = await response.json();

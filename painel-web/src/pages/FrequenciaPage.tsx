@@ -3,6 +3,7 @@ import {
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, CircularProgress, Alert
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import api from '../services/api';
 
 interface ResumoColaborador {
   id: number;
@@ -26,18 +27,25 @@ const FrequenciaPage: React.FC = () => {
   const carregarResumoFrequencia = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3333/api/frequencia/resumo-mensal');
+      console.log('🔄 Carregando resumo de frequência...');
       
-      if (response.ok) {
-        const data = await response.json();
-        setResumo(data.resumo || []);
+      const response = await api.get('/frequencia/resumo-mensal');
+      console.log('✅ Dados recebidos:', response.data);
+      
+      if (response.data.success) {
+        setResumo(response.data.resumo || []);
         setError(null);
       } else {
         setError('Erro ao carregar dados do servidor');
         setResumo([]);
       }
-    } catch (error) {
-      console.error('Erro ao carregar resumo de frequência:', error);
+    } catch (error: any) {
+      console.error('❌ Erro ao carregar resumo de frequência:', error);
+      console.error('📋 Detalhes do erro:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       setError('Erro de conexão com o servidor');
       setResumo([]);
     } finally {

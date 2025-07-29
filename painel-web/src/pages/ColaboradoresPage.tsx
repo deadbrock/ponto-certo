@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonIcon from '@mui/icons-material/Person';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../services/api';
 
 const ColaboradoresPage: React.FC = () => {
   const { usuario } = useAuth();
@@ -24,16 +25,11 @@ const ColaboradoresPage: React.FC = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:3333/api/colaboradores/public?page=${pagina}&limit=${porPagina}&search=${filtroBusca}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+              const response = await api.get(`/colaboradores/public?page=${pagina}&limit=${porPagina}&search=${filtroBusca}`);
       
-      if (response.ok) {
-        const data = await response.json();
-        setColaboradores(data.colaboradores || []);
-        setTotalPaginas(Math.ceil(data.total / porPagina) || 1);
+      if (response.data.success) {
+        setColaboradores(response.data.colaboradores || []);
+        setTotalPaginas(Math.ceil(response.data.total / porPagina) || 1);
       }
     } catch (error) {
       console.error('Erro ao carregar colaboradores:', error);

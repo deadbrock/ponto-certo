@@ -66,6 +66,7 @@ import AlertasVigencia from '../components/contratos/AlertasVigencia';
 // import ClonagemContrato from '../components/contratos/ClonagemContrato'; // REMOVIDO PARA DEPLOY
 import CriacaoContrato from '../components/contratos/CriacaoContrato';
 import { ContratosExportService } from '../services/contratosExportService';
+import api from '../services/api';
 
 const ContratosPage: React.FC = () => {
   const { usuario } = useAuth();
@@ -95,22 +96,18 @@ const ContratosPage: React.FC = () => {
   // Função para carregar dados do dashboard
   const carregarDashboard = async () => {
     try {
-      const response = await fetch('/api/contratos/dashboard');
-      if (response.ok) {
-        const data = await response.json();
-        // Garantir que dashboard tenha valores padrão se não vieram do backend
-        setDashboard({
-          totalContratos: data?.totalContratos || 0,
-          contratosAtivos: data?.contratosAtivos || 0,
-          contratosVencidos: data?.contratosVencidos || 0,
-          contratosProximoVencimento: data?.contratosProximoVencimento || 0,
-          valorTotalContratos: data?.valorTotalContratos || 0,
-          alertasVigencia: Array.isArray(data?.alertasVigencia) ? data.alertasVigencia : [],
-          ...data
-        });
-      } else {
-        throw new Error('Erro ao carregar dashboard');
-      }
+      const response = await api.get('/contratos/dashboard');
+      const data = response.data;
+      // Garantir que dashboard tenha valores padrão se não vieram do backend
+      setDashboard({
+        totalContratos: data?.totalContratos || 0,
+        contratosAtivos: data?.contratosAtivos || 0,
+        contratosVencidos: data?.contratosVencidos || 0,
+        contratosProximoVencimento: data?.contratosProximoVencimento || 0,
+        valorTotalContratos: data?.valorTotalContratos || 0,
+        alertasVigencia: Array.isArray(data?.alertasVigencia) ? data.alertasVigencia : [],
+        ...data
+      });
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
     }
@@ -128,14 +125,10 @@ const ContratosPage: React.FC = () => {
       if (filtros.localizacao) params.append('localizacao', filtros.localizacao);
       if (searchTerm) params.append('busca', searchTerm);
 
-      const response = await fetch(`/api/contratos?${params.toString()}`);
-      if (response.ok) {
-        const data = await response.json();
-        // Garantir que sempre seja um array, mesmo se a API retornar algo diferente
-        setContratos(Array.isArray(data) ? data : []);
-      } else {
-        throw new Error('Erro ao carregar contratos');
-      }
+      const response = await api.get(`/contratos?${params.toString()}`);
+      const data = response.data;
+      // Garantir que sempre seja um array, mesmo se a API retornar algo diferente
+      setContratos(Array.isArray(data) ? data : []);
     } catch (error) {
       setError('Erro de conexão com o servidor');
       console.error('Erro ao carregar contratos:', error);
@@ -212,24 +205,13 @@ const ContratosPage: React.FC = () => {
   // Função para criar novo contrato
   const criarContrato = async (dadosContrato: any) => {
     try {
-      const response = await fetch('/api/contratos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dadosContrato)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        showToast('Contrato criado com sucesso!', 'success');
-        carregarContratos();
-        carregarDashboard();
-        setShowCreateDialog(false);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erro ao criar contrato');
-      }
+      await api.post('/contratos', dadosContrato);
+      showToast('Contrato criado com sucesso!', 'success');
+      carregarContratos();
+      carregarDashboard();
+      setShowCreateDialog(false);
     } catch (error: any) {
-      showToast(error.message || 'Erro ao criar contrato', 'error');
+      showToast(error.response?.data?.error || error.message || 'Erro ao criar contrato', 'error');
       console.error('Erro ao criar contrato:', error);
       throw error; // Re-throw para o componente tratar
     }
@@ -238,20 +220,11 @@ const ContratosPage: React.FC = () => {
   // Função para clonar contrato
   const clonarContrato = async (dadosClonagem: any) => {
     try {
-      const response = await fetch('/api/contratos/clonar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dadosClonagem)
-      });
-
-      if (response.ok) {
-        showToast('Contrato clonado com sucesso!', 'success');
-        carregarContratos();
-        setShowCloneDialog(false);
-        setContratoParaClonar(null);
-      } else {
-        throw new Error('Erro ao clonar contrato');
-      }
+      await api.post('/contratos/clonar', dadosClonagem);
+      showToast('Contrato clonado com sucesso!', 'success');
+      carregarContratos();
+      setShowCloneDialog(false);
+      setContratoParaClonar(null);
     } catch (error) {
       showToast('Erro ao clonar contrato', 'error');
       console.error('Erro ao clonar contrato:', error);
@@ -261,13 +234,8 @@ const ContratosPage: React.FC = () => {
   // Função para marcar alerta como visualizado
   const marcarAlertaVisualizado = async (alertaId: string) => {
     try {
-      const response = await fetch(`/api/contratos/alertas/${alertaId}/visualizar`, {
-        method: 'PATCH'
-      });
-
-      if (response.ok) {
-        carregarDashboard();
-      }
+      await api.patch(`/contratos/alertas/${alertaId}/visualizar`);
+      carregarDashboard();
     } catch (error) {
       console.error('Erro ao marcar alerta como visualizado:', error);
     }

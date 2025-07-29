@@ -110,7 +110,7 @@ const RegistrosPage: React.FC = () => {
     setLoadingExport(true);
     try {
       // Buscar dados reais do backend
-      const response = await fetch('http://localhost:3333/api/relatorios/presenca-colaboradores');
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'}/relatorios/presenca-colaboradores`);
       
       let colaboradores: ColaboradorResumo[] = [];
       

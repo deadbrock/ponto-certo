@@ -14,6 +14,10 @@ router.post('/', contratosController.criarContrato);
 // Retorna dados de contratos por estado para o mapa de atuação
 router.get('/estados', contratosController.obterDadosEstados);
 
+// GET /api/contratos/mapa-atuacao
+// Endpoint específico para o mapa de atuação com formato esperado pelo frontend
+router.get('/mapa-atuacao', contratosController.obterDadosMapaAtuacao);
+
 // GET /api/contratos/estatisticas
 // Retorna estatísticas gerais de contratos para o mapa
 router.get('/estatisticas', contratosController.obterEstatisticasContratos);

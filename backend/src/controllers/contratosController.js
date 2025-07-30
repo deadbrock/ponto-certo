@@ -695,6 +695,154 @@ const obterKPIsContrato = async (req, res) => {
     }
 };
 
+// GET /api/contratos/mapa-atuacao - NOVO ENDPOINT para o mapa de atuação
+const obterDadosMapaAtuacao = async (req, res) => {
+    try {
+        console.log(`[${new Date()}] Buscando dados do mapa de atuação`);
+
+        // Buscar todos os contratos ativos com localização
+        const queryContratos = `
+            SELECT 
+                c.id,
+                c.nome,
+                c.cliente,
+                c.localizacao,
+                c.valor,
+                c.vigencia_inicio,
+                c.vigencia_fim,
+                c.status,
+                COUNT(cc.colaborador_id) as total_colaboradores
+            FROM contratos c
+            LEFT JOIN colaboradores_contratos cc ON c.id = cc.contrato_id AND cc.ativo = true
+            GROUP BY c.id, c.nome, c.cliente, c.localizacao, c.valor, c.vigencia_inicio, c.vigencia_fim, c.status
+            ORDER BY c.localizacao
+        `;
+
+        const result = await db.query(queryContratos);
+        
+        // Processar dados por estado brasileiro
+        const estadosBrasil = {
+            'SP': { nomeEstado: 'São Paulo', contratos: [] },
+            'RJ': { nomeEstado: 'Rio de Janeiro', contratos: [] },
+            'MG': { nomeEstado: 'Minas Gerais', contratos: [] },
+            'ES': { nomeEstado: 'Espírito Santo', contratos: [] },
+            'PR': { nomeEstado: 'Paraná', contratos: [] },
+            'SC': { nomeEstado: 'Santa Catarina', contratos: [] },
+            'RS': { nomeEstado: 'Rio Grande do Sul', contratos: [] },
+            'PE': { nomeEstado: 'Pernambuco', contratos: [] },
+            'BA': { nomeEstado: 'Bahia', contratos: [] },
+            'CE': { nomeEstado: 'Ceará', contratos: [] },
+            'DF': { nomeEstado: 'Distrito Federal', contratos: [] },
+            'GO': { nomeEstado: 'Goiás', contratos: [] },
+            'MT': { nomeEstado: 'Mato Grosso', contratos: [] },
+            'MS': { nomeEstado: 'Mato Grosso do Sul', contratos: [] }
+        };
+
+        // Classificar contratos por estado
+        result.rows.forEach(contrato => {
+            // Tentar identificar o estado pela localização
+            let uf = 'DF'; // Default
+            
+            Object.keys(estadosBrasil).forEach(estado => {
+                if (contrato.localizacao && 
+                    (contrato.localizacao.toUpperCase().includes(estado) || 
+                     contrato.localizacao.toUpperCase().includes(estadosBrasil[estado].nomeEstado.toUpperCase()))) {
+                    uf = estado;
+                }
+            });
+
+            // Determinar status do contrato baseado na vigência
+            const hoje = new Date();
+            const vigenciaFim = new Date(contrato.vigencia_fim);
+            const diasParaVencer = Math.ceil((vigenciaFim - hoje) / (1000 * 60 * 60 * 24));
+            
+            let statusContrato = 'ativo';
+            if (diasParaVencer < 0) {
+                statusContrato = 'vencido';
+            } else if (diasParaVencer <= 30) {
+                statusContrato = 'proximo-vencimento';
+            }
+
+            estadosBrasil[uf].contratos.push({
+                id: contrato.id,
+                nome: contrato.nome,
+                cliente: contrato.cliente,
+                valor: parseFloat(contrato.valor) || 0,
+                vigenciaInicio: contrato.vigencia_inicio,
+                vigenciaFim: contrato.vigencia_fim,
+                statusContrato,
+                totalColaboradores: parseInt(contrato.total_colaboradores) || 0
+            });
+        });
+
+        // Criar lista de estados com dados consolidados
+        const estados = Object.keys(estadosBrasil).map(uf => {
+            const estadoData = estadosBrasil[uf];
+            const contratos = estadoData.contratos;
+            
+            // Se não tem contratos, marcar como sem-contratos
+            if (contratos.length === 0) {
+                return {
+                    uf,
+                    nomeEstado: estadoData.nomeEstado,
+                    statusContrato: 'sem-contratos',
+                    totalContratos: 0,
+                    totalFuncionarios: 0,
+                    valorTotal: 0,
+                    clientes: [],
+                    contratos: []
+                };
+            }
+
+            // Determinar status geral do estado (pior status prevalece)
+            let statusGeral = 'ativo';
+            if (contratos.some(c => c.statusContrato === 'vencido')) {
+                statusGeral = 'vencido';
+            } else if (contratos.some(c => c.statusContrato === 'proximo-vencimento')) {
+                statusGeral = 'proximo-vencimento';
+            }
+
+            return {
+                uf,
+                nomeEstado: estadoData.nomeEstado,
+                statusContrato: statusGeral,
+                totalContratos: contratos.length,
+                totalFuncionarios: contratos.reduce((sum, c) => sum + c.totalColaboradores, 0),
+                valorTotal: contratos.reduce((sum, c) => sum + c.valor, 0),
+                clientes: [...new Set(contratos.map(c => c.cliente))],
+                contratos
+            };
+        });
+
+        // Calcular resumo geral
+        const resumo = {
+            totalEstados: estados.filter(e => e.statusContrato !== 'sem-contratos').length,
+            totalContratos: estados.reduce((sum, e) => sum + e.totalContratos, 0),
+            totalFuncionarios: estados.reduce((sum, e) => sum + e.totalFuncionarios, 0),
+            valorTotalContratos: estados.reduce((sum, e) => sum + e.valorTotal, 0),
+            estadosAtivos: estados.filter(e => e.statusContrato === 'ativo').length,
+            estadosVencidos: estados.filter(e => e.statusContrato === 'vencido').length,
+            estadosProximoVencimento: estados.filter(e => e.statusContrato === 'proximo-vencimento').length
+        };
+
+        const response = {
+            estados,
+            resumo
+        };
+
+        console.log(`[${new Date()}] Dados do mapa processados: ${estados.length} estados, ${resumo.totalContratos} contratos`);
+        
+        return res.status(200).json(response);
+
+    } catch (error) {
+        console.error('Erro ao obter dados do mapa de atuação:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Erro interno do servidor'
+        });
+    }
+};
+
 module.exports = {
     criarContrato,
     listarContratos,
@@ -704,5 +852,6 @@ module.exports = {
     obterDashboardContratos,
     obterDadosEstados,
     obterEstatisticasContratos,
-    obterKPIsContrato
+    obterKPIsContrato,
+    obterDadosMapaAtuacao
 }; 

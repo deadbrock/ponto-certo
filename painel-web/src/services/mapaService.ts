@@ -83,6 +83,7 @@ class MapaService {
         params.append('vigenciaFim', filtros.vigenciaFim);
       }
 
+      // Usar o endpoint implementado no backend
       const response = await this.api.get(`/contratos/mapa-atuacao?${params.toString()}`);
       
       if (response.data) {
@@ -100,11 +101,12 @@ class MapaService {
   // Buscar detalhes de contratos por estado
   async buscarContratosPorEstado(uf: string): Promise<ContratoResumo[]> {
     try {
-      const response = await this.api.get(`/contratos/por-estado/${uf}`);
+      // Usar endpoint que existe no backend
+      const response = await this.api.get(`/contratos?localizacao=${uf}`);
       return response.data || [];
     } catch (error) {
-      console.warn('Erro ao buscar contratos por estado, usando dados mock:', error);
-      return this.gerarContratosMockPorEstado(uf);
+      console.warn('Erro ao buscar contratos por estado:', error);
+      return [];
     }
   }
 

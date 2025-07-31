@@ -698,7 +698,7 @@ const obterKPIsContrato = async (req, res) => {
 // GET /api/contratos/mapa-atuacao - NOVO ENDPOINT para o mapa de atuação
 const obterDadosMapaAtuacao = async (req, res) => {
     try {
-        console.log(`[${new Date()}] Buscando dados do mapa de atuação`);
+        console.log(`[${new Date()}] 🗺️ Buscando dados do mapa de atuação`);
 
         // Buscar todos os contratos ativos com localização
         const queryContratos = `

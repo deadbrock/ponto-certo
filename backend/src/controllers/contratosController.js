@@ -700,7 +700,8 @@ const obterDadosMapaAtuacao = async (req, res) => {
     try {
         console.log(`[${new Date()}] 🗺️ Buscando dados do mapa de atuação`);
 
-        // Buscar todos os contratos ativos com localização
+        // VERSÃO SIMPLIFICADA PARA DEBUG
+        // Buscar todos os contratos primeiro sem JOIN
         const queryContratos = `
             SELECT 
                 c.id,
@@ -710,15 +711,14 @@ const obterDadosMapaAtuacao = async (req, res) => {
                 c.valor,
                 c.vigencia_inicio,
                 c.vigencia_fim,
-                c.status,
-                COUNT(cc.colaborador_id) as total_colaboradores
+                c.status
             FROM contratos c
-            LEFT JOIN colaboradores_contratos cc ON c.id = cc.contrato_id AND cc.ativo = true
-            GROUP BY c.id, c.nome, c.cliente, c.localizacao, c.valor, c.vigencia_inicio, c.vigencia_fim, c.status
             ORDER BY c.localizacao
         `;
 
+        console.log('🔍 Executando query...');
         const result = await db.query(queryContratos);
+        console.log(`✅ Query executada! ${result.rows.length} contratos encontrados`);
         
         // Processar dados por estado brasileiro
         const estadosBrasil = {
@@ -738,18 +738,23 @@ const obterDadosMapaAtuacao = async (req, res) => {
             'MS': { nomeEstado: 'Mato Grosso do Sul', contratos: [] }
         };
 
-        // Classificar contratos por estado
+        // Classificar contratos por estado - VERSÃO SIMPLIFICADA
         result.rows.forEach(contrato => {
-            // Tentar identificar o estado pela localização
-            let uf = 'DF'; // Default
+            console.log(`📍 Processando contrato: ${contrato.nome} - ${contrato.localizacao}`);
             
-            Object.keys(estadosBrasil).forEach(estado => {
-                if (contrato.localizacao && 
-                    (contrato.localizacao.toUpperCase().includes(estado) || 
-                     contrato.localizacao.toUpperCase().includes(estadosBrasil[estado].nomeEstado.toUpperCase()))) {
-                    uf = estado;
-                }
-            });
+            // Tentar identificar o estado pela localização
+            let uf = 'SP'; // Default para São Paulo
+            
+            if (contrato.localizacao) {
+                const loc = contrato.localizacao.toUpperCase();
+                Object.keys(estadosBrasil).forEach(estado => {
+                    if (loc.includes(estado) || loc.includes(estadosBrasil[estado].nomeEstado.toUpperCase())) {
+                        uf = estado;
+                    }
+                });
+            }
+            
+            console.log(`   Estado identificado: ${uf}`);
 
             // Determinar status do contrato baseado na vigência
             const hoje = new Date();
@@ -763,6 +768,8 @@ const obterDadosMapaAtuacao = async (req, res) => {
                 statusContrato = 'proximo-vencimento';
             }
 
+            console.log(`   Status: ${statusContrato} (${diasParaVencer} dias)`);
+
             estadosBrasil[uf].contratos.push({
                 id: contrato.id,
                 nome: contrato.nome,
@@ -771,7 +778,7 @@ const obterDadosMapaAtuacao = async (req, res) => {
                 vigenciaInicio: contrato.vigencia_inicio,
                 vigenciaFim: contrato.vigencia_fim,
                 statusContrato,
-                totalColaboradores: parseInt(contrato.total_colaboradores) || 0
+                totalColaboradores: 0 // Fixo por enquanto
             });
         });
 
@@ -830,9 +837,13 @@ const obterDadosMapaAtuacao = async (req, res) => {
             resumo
         };
 
-        console.log(`[${new Date()}] Dados do mapa processados: ${estados.length} estados, ${resumo.totalContratos} contratos`);
+        console.log(`[${new Date()}] ✅ Dados do mapa processados: ${estados.length} estados, ${resumo.totalContratos} contratos`);
+        console.log('📊 Resumo final:', resumo);
         
-        return res.status(200).json(response);
+        return res.status(200).json({
+            success: true,
+            data: response
+        });
 
     } catch (error) {
         console.error('Erro ao obter dados do mapa de atuação:', error);

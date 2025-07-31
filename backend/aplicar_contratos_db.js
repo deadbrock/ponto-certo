@@ -1,13 +1,21 @@
 const { Client } = require('pg');
 require('dotenv').config();
 
-// Configuração da conexão
+// Configuração da conexão usando DATABASE_URL do Railway
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:acAshacscvQtOROcjEpuxaiXXUFyJDqC@postgres.railway.internal:5432/railway';
+
+console.log('🔧 Configuração do banco:');
+console.log('   User: postgres');
+console.log('   Host: postgres.railway.internal');
+console.log('   Database: railway');
+console.log('   Password: [DEFINIDA]');
+console.log('   Port: 5432');
+console.log('   SSL: false');
+console.log('   🌎 Timezone: America/Sao_Paulo');
+
 const client = new Client({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_DATABASE || 'ponto_digital_fg',
-  password: process.env.DB_PASSWORD || 'superman19',
-  port: parseInt(process.env.DB_PORT) || 5432,
+  connectionString: DATABASE_URL,
+  ssl: false
 });
 
 // SQL para criar as tabelas de contratos

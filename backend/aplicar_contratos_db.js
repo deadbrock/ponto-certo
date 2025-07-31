@@ -2,14 +2,14 @@ const { Client } = require('pg');
 require('dotenv').config();
 
 // Configuração da conexão usando DATABASE_URL do Railway
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:acAshacscvQtOROcjEpuxaiXXUFyJDqC@postgres.railway.internal:5432/railway';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:acAshacscvQtOROcjEpuxaiXXUFyJDqC@tramway.proxy.rlwy.net:43129/railway';
 
 console.log('🔧 Configuração do banco:');
 console.log('   User: postgres');
-console.log('   Host: postgres.railway.internal');
+console.log('   Host: tramway.proxy.rlwy.net');
 console.log('   Database: railway');
 console.log('   Password: [DEFINIDA]');
-console.log('   Port: 5432');
+console.log('   Port: 43129');
 console.log('   SSL: false');
 console.log('   🌎 Timezone: America/Sao_Paulo');
 

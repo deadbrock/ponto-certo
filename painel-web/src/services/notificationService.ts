@@ -143,7 +143,10 @@ class NotificationService {
     // Implementar WebSocket ou polling para notificações reais
     const pollNotifications = async () => {
       try {
-        const response = await fetch('http://localhost:3333/api/notificacoes/recentes');
+        const backendUrl = process.env.NODE_ENV === 'production' 
+          ? process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'
+          : 'http://localhost:3333/api';
+        const response = await fetch(`${backendUrl}/notificacoes/recentes`);
         if (response.ok) {
           const data = await response.json();
           const novasNotificacoes = data.notificacoes || [];

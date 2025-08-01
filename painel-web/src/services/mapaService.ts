@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getApiBaseUrl } from '../config/app';
 
 export interface EstadoContrato {
   uf: string;
@@ -45,7 +46,7 @@ export interface DadosMapaAtuacao {
 
 class MapaService {
   private api = axios.create({
-    baseURL: 'http://localhost:3333/api',
+    baseURL: getApiBaseUrl(),
     headers: {
       'Content-Type': 'application/json',
     },

@@ -123,19 +123,107 @@ class MapaService {
     }
   }
 
-  // DADOS MOCK REMOVIDOS - Sistema limpo para dados reais
+  // DADOS MOCK TEMPORÁRIOS - Para demonstração do Mapa Avançado
   private gerarDadosMock(): DadosMapaAtuacao {
-    // Sistema iniciando vazio - contratos serão carregados do backend real
-    const estados: EstadoContrato[] = [];
+    const estados: EstadoContrato[] = [
+      {
+        uf: 'SP',
+        nomeEstado: 'São Paulo',
+        statusContrato: 'ativo',
+        totalContratos: 5,
+        totalFuncionarios: 250,
+        valorTotal: 1500000,
+        clientes: ['Empresa A', 'Empresa B', 'Empresa C'],
+        contratos: [
+          {
+            id: '1',
+            nome: 'Contrato Segurança SP',
+            cliente: 'Empresa A',
+            cidade: 'São Paulo',
+            valor: 500000,
+            vigenciaInicio: '2024-01-01',
+            vigenciaFim: '2024-12-31',
+            status: 'ativo',
+            totalColaboradores: 100
+          }
+        ]
+      },
+      {
+        uf: 'RJ',
+        nomeEstado: 'Rio de Janeiro',
+        statusContrato: 'proximo-vencimento',
+        totalContratos: 3,
+        totalFuncionarios: 120,
+        valorTotal: 800000,
+        clientes: ['Empresa D', 'Empresa E'],
+        contratos: [
+          {
+            id: '2',
+            nome: 'Contrato Limpeza RJ',
+            cliente: 'Empresa D',
+            cidade: 'Rio de Janeiro',
+            valor: 400000,
+            vigenciaInicio: '2024-01-01',
+            vigenciaFim: '2024-08-31',
+            status: 'proximo-vencimento',
+            totalColaboradores: 60
+          }
+        ]
+      },
+      {
+        uf: 'MG',
+        nomeEstado: 'Minas Gerais',
+        statusContrato: 'ativo',
+        totalContratos: 2,
+        totalFuncionarios: 80,
+        valorTotal: 600000,
+        clientes: ['Empresa F'],
+        contratos: [
+          {
+            id: '3',
+            nome: 'Contrato Vigilância MG',
+            cliente: 'Empresa F',
+            cidade: 'Belo Horizonte',
+            valor: 300000,
+            vigenciaInicio: '2024-03-01',
+            vigenciaFim: '2025-02-28',
+            status: 'ativo',
+            totalColaboradores: 40
+          }
+        ]
+      },
+      {
+        uf: 'BA',
+        nomeEstado: 'Bahia',
+        statusContrato: 'vencido',
+        totalContratos: 1,
+        totalFuncionarios: 30,
+        valorTotal: 200000,
+        clientes: ['Empresa G'],
+        contratos: [
+          {
+            id: '4',
+            nome: 'Contrato Portaria BA',
+            cliente: 'Empresa G',
+            cidade: 'Salvador',
+            valor: 200000,
+            vigenciaInicio: '2023-01-01',
+            vigenciaFim: '2023-12-31',
+            status: 'vencido',
+            totalColaboradores: 30
+          }
+        ]
+      }
+    ];
 
     const resumo = {
-      totalEstados: 0,
-      totalContratos: 0,
-      totalFuncionarios: 0,
-      valorTotalContratos: 0,
-      estadosAtivos: 0,
-      estadosVencidos: 0,
-      estadosProximoVencimento: 0
+      totalEstados: 4,
+      totalContratos: 11,
+      totalFuncionarios: 480,
+      valorTotalContratos: 3100000,
+      estadosAtivos: 2,
+      estadosVencidos: 1,
+      estadosProximoVencimento: 1
     };
 
     return { estados, resumo };

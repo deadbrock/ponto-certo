@@ -19,7 +19,8 @@ import {
   Notifications as NotificationsIcon,
   Groups as GroupsIcon,
   Business as BusinessIcon,
-  Map as MapIcon
+  Map as MapIcon,
+  Explore as ExploreIcon
 } from '@mui/icons-material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -168,6 +169,37 @@ const Sidebar: React.FC = () => {
                 sx: { 
                   color: location.pathname === '/contratos/mapa' ? '#1976d2' : 'inherit',
                   fontWeight: location.pathname === '/contratos/mapa' ? 600 : 400
+                }
+              }}
+            />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/contratos/mapa-avancado"
+            selected={location.pathname === '/contratos/mapa-avancado'}
+            sx={{ 
+              backgroundColor: location.pathname === '/contratos/mapa-avancado' ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+              borderLeft: location.pathname === '/contratos/mapa-avancado' ? '4px solid #1976d2' : 'none',
+              pl: 4
+            }}
+          >
+            <ListItemIcon><ExploreIcon sx={{ color: location.pathname === '/contratos/mapa-avancado' ? '#1976d2' : 'inherit' }} /></ListItemIcon>
+            <ListItemText 
+              primary="🚀 Mapa Avançado" 
+              secondary="Interativo • Zoom • Export"
+              primaryTypographyProps={{ 
+                sx: { 
+                  color: location.pathname === '/contratos/mapa-avancado' ? '#1976d2' : 'inherit',
+                  fontWeight: location.pathname === '/contratos/mapa-avancado' ? 600 : 400,
+                  fontSize: '0.9rem'
+                }
+              }}
+              secondaryTypographyProps={{
+                sx: {
+                  fontSize: '0.75rem',
+                  color: location.pathname === '/contratos/mapa-avancado' ? '#1976d2' : 'text.secondary'
                 }
               }}
             />

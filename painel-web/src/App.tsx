@@ -25,6 +25,7 @@ import ConfiguracoesNotificacoes from './pages/ConfiguracoesNotificacoes';
 import ContratosPage from './pages/ContratosPage';
 import ContratoDetalhesPage from './pages/ContratoDetalhesPage';
 import MapaDeAtuacaoPage from './pages/MapaDeAtuacaoPage';
+import MapaDeAtuacaoAvancadoPage from './pages/MapaDeAtuacaoAvancadoPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 
@@ -212,8 +213,9 @@ const AppContent: React.FC = () => {
             <Route path="/auditoria" element={<AuditoriaPage />} />
             <Route path="/integracoes" element={<IntegracoesPage />} />
             <Route path="/contratos" element={<ContratosPage />} />
-            <Route path="/contratos/:id" element={<ContratoDetalhesPage />} />
-            <Route path="/contratos/mapa" element={<MapaDeAtuacaoPage />} />
+<Route path="/contratos/:id" element={<ContratoDetalhesPage />} />
+<Route path="/contratos/mapa" element={<MapaDeAtuacaoPage />} />
+<Route path="/contratos/mapa-avancado" element={<MapaDeAtuacaoAvancadoPage />} />
             <Route path="/configuracoes-infra" element={<ConfiguracoesInfraPage />} />
             <Route path="/configuracoes-notificacoes" element={<ConfiguracoesNotificacoes />} />
             <Route path="/suporte" element={<SuportePage />} />

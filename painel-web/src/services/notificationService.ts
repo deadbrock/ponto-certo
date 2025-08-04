@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from '../config/app';
+
 export interface Notification {
   id: string;
   type: 'info' | 'warning' | 'error' | 'success';
@@ -143,9 +145,8 @@ class NotificationService {
     // Implementar WebSocket ou polling para notificações reais
     const pollNotifications = async () => {
       try {
-        const backendUrl = process.env.NODE_ENV === 'production' 
-          ? process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'
-          : 'http://localhost:3333/api';
+        // Usar a mesma configuração que outros serviços
+        const backendUrl = getApiBaseUrl();
         const response = await fetch(`${backendUrl}/notificacoes/recentes`);
         if (response.ok) {
           const data = await response.json();

@@ -404,38 +404,44 @@ const obterDashboardContratos = async (req, res) => {
     }
 };
 
-// GET /api/contratos/mapa-atuacao - VERSÃO ROBUSTA para o mapa de atuação
+// GET /api/contratos/mapa-atuacao - VERSÃO ULTRA SIMPLES para debug
 const obterDadosMapaAtuacao = async (req, res) => {
     try {
-        console.log(`[${new Date()}] 🗺️ DEBUG - Busca simplificada do mapa`);
+        console.log(`[${new Date()}] 🗺️ DEBUG - Mapa ultra simples`);
 
-        // Buscar contratos básicos
-        const result = await db.query('SELECT id, nome, cliente, localizacao FROM contratos');
-        
-        console.log(`✅ Encontrados ${result.rows.length} contratos`);
-
-        // Retornar estrutura simples
+        // Retornar dados hardcoded para debug
         const response = {
             estados: [{
                 uf: 'SP',
                 nomeEstado: 'São Paulo',
                 statusContrato: 'ativo',
-                totalContratos: result.rows.length,
-                totalFuncionarios: 0,
-                valorTotal: 25000,
-                clientes: ['Teste'],
-                contratos: result.rows
+                totalContratos: 5,
+                totalFuncionarios: 150,
+                valorTotal: 250000,
+                clientes: ['Cliente A', 'Cliente B'],
+                contratos: []
+            }, {
+                uf: 'RJ',
+                nomeEstado: 'Rio de Janeiro',
+                statusContrato: 'ativo',
+                totalContratos: 3,
+                totalFuncionarios: 85,
+                valorTotal: 180000,
+                clientes: ['Cliente C'],
+                contratos: []
             }],
             resumo: {
-                totalEstados: 1,
-                totalContratos: result.rows.length,
-                totalFuncionarios: 0,
-                valorTotalContratos: 25000,
-                estadosAtivos: 1,
+                totalEstados: 2,
+                totalContratos: 8,
+                totalFuncionarios: 235,
+                valorTotalContratos: 430000,
+                estadosAtivos: 2,
                 estadosVencidos: 0,
                 estadosProximoVencimento: 0
             }
         };
+
+        console.log('✅ Retornando dados mock para o mapa');
 
         return res.status(200).json({
             success: true,
@@ -443,7 +449,7 @@ const obterDadosMapaAtuacao = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ ERRO:', error.message);
+        console.error('❌ ERRO no mapa:', error.message);
         return res.status(500).json({
             success: false,
             error: 'Erro interno do servidor',

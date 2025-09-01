@@ -4,6 +4,8 @@ const { recognizeFace, addPerson, listPersons, resetSystem, registerPointByFace,
 
 // Rota para reconhecimento facial
 router.post('/face-recognition', upload.single('image'), recognizeFace);
+// Alias para compatibilidade com apps que usam /recognize
+router.post('/recognize', upload.single('image'), recognizeFace);
 
 // Rota para adicionar nova pessoa
 router.post('/add-person', upload.single('image'), addPerson);

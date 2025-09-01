@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const db = require('./config/database');
+const { criarTabelasEssenciais } = require('./database/schema');
 
 const authRoutes = require('./api/routes/authRoutes');
 const pontoRoutes = require('./api/routes/pontoRoutes');
@@ -148,14 +149,25 @@ app.get('/db-test', async (req, res) => {
 // Testar conexão com banco ao iniciar
 app.listen(PORT, async () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
-    console.log(`📱 Endpoint de reconhecimento facial: http://localhost:${PORT}/api/face-recognition/`);
+    console.log(`📱 Endpoint de reconhecimento facial: http://localhost:${PORT}/api/face/recognize`);
     console.log(`🔍 Health check: http://localhost:${PORT}/`);
     console.log(`📊 Teste DB: http://localhost:${PORT}/db-test`);
-    console.log(`🗺️ Mapa de Atuação: http://localhost:${PORT}/api/contratos/estados`);
+    console.log(`🗺️ Mapa de Atuação: http://localhost:${PORT}/api/contratos/mapa-atuacao`);
     
     try {
         const result = await db.query('SELECT NOW()');
         console.log('✅ Conexão com PostgreSQL estabelecida:', result.rows[0].now);
+        
+        // Aplicar schema automaticamente
+        console.log('🗄️ Aplicando schema do banco...');
+        const schemaOk = await criarTabelasEssenciais();
+        
+        if (schemaOk) {
+            console.log('🎉 Backend totalmente configurado e pronto para uso!');
+        } else {
+            console.warn('⚠️ Houve problemas ao aplicar o schema, mas o servidor está rodando');
+        }
+        
     } catch (error) {
         console.error('❌ Erro ao conectar com PostgreSQL:', error.message);
     }

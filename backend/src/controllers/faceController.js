@@ -435,4 +435,3 @@ module.exports = {
   registerPointByFace,
   upload
 }; 
-}; 

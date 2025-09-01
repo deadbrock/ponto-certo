@@ -36,7 +36,9 @@ const criarTabelasEssenciais = async () => {
         cargo VARCHAR(100),
         departamento VARCHAR(100),
         senha VARCHAR(255),
+        data_nascimento DATE,
         data_admissao DATE,
+        face_cadastrada BOOLEAN DEFAULT false,
         ativo BOOLEAN DEFAULT true,
         criado_em TIMESTAMP DEFAULT NOW()
       )
@@ -132,12 +134,12 @@ const criarTabelasEssenciais = async () => {
     
     if (parseInt(colaboradoresExist.rows[0].count) === 0) {
       await db.query(`
-        INSERT INTO colaboradores (nome, cpf, pis, email, senha) VALUES 
-        ('João Silva', '12345678901', '12345678901', 'joao@fgservices.com', '123456'),
-        ('Maria Santos', '98765432109', '98765432109', 'maria@fgservices.com', '123456'),
-        ('Pedro Oliveira', '11111111111', '11111111111', 'pedro@fgservices.com', '123456')
+        INSERT INTO colaboradores (nome, cpf, pis, email, senha, data_nascimento, face_cadastrada) VALUES 
+        ('João Silva', '12345678901', '12345678901', 'joao@fgservices.com', '123456', '1990-05-15', false),
+        ('Maria Santos', '98765432109', '98765432109', 'maria@fgservices.com', '123456', '1985-08-22', false),
+        ('Pedro Oliveira', '11111111111', '11111111111', 'pedro@fgservices.com', '123456', '1992-12-03', false)
       `);
-      console.log('✅ Colaboradores de exemplo criados');
+      console.log('✅ Colaboradores de exemplo criados (sem face cadastrada)');
     }
 
     // 9. Criar contratos de exemplo (se não existirem)

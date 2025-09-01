@@ -23,6 +23,7 @@ const dashboardRoutes = require('./api/routes/dashboardRoutes');
 const notificacoesRoutes = require('./api/routes/notificacoesRoutes');
 const analyticsRoutes = require('./api/routes/analyticsRoutes');
 const contratosRoutes = require('./api/routes/contratosRoutes');
+const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
 
 const app = express();
 
@@ -54,7 +55,8 @@ app.get('/', (req, res) => {
             dashboard: '/api/dashboard',
             notificacoes: '/api/notificacoes',
             analytics: '/api/analytics',
-            contratos: '/api/contratos'
+            contratos: '/api/contratos',
+            "primeiro-registro": '/api/primeiro-registro'
         }
     });
 });
@@ -136,6 +138,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notificacoes', notificacoesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/contratos', contratosRoutes);
+app.use('/api/primeiro-registro', primeiroRegistroRoutes);
 
 app.get('/db-test', async (req, res) => {
     try {

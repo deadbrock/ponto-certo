@@ -12,7 +12,58 @@ const primeiroRegistroController = require('../../controllers/primeiroRegistroCo
  * @desc Consultar colaborador por CPF para primeiro registro
  * @access Public (sem autenticação - usado pelo totem)
  */
-router.post('/consultar-cpf', primeiroRegistroController.buscarColaboradorPorCpf);
+router.post('/consultar-cpf', async (req, res) => {
+  try {
+    const { cpf } = req.body;
+    
+    if (!cpf) {
+      return res.status(400).json({
+        success: false,
+        message: 'CPF é obrigatório'
+      });
+    }
+
+    const db = require('../../config/database');
+    
+    const query = `
+      SELECT id, nome, cpf, data_nascimento, cargo, departamento, face_cadastrada
+      FROM colaboradores 
+      WHERE cpf = $1 AND ativo = true
+    `;
+    
+    const result = await db.query(query, [cpf]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'CPF não encontrado no sistema'
+      });
+    }
+    
+    const colaborador = result.rows[0];
+    
+    return res.status(200).json({
+      success: true,
+      colaborador: {
+        id: colaborador.id,
+        nome: colaborador.nome,
+        cpf: colaborador.cpf,
+        data_nascimento: colaborador.data_nascimento,
+        cargo: colaborador.cargo,
+        departamento: colaborador.departamento,
+        face_cadastrada: colaborador.face_cadastrada
+      }
+    });
+    
+  } catch (error) {
+    console.error('Erro ao consultar CPF:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: error.message
+    });
+  }
+});
 
 /**
  * @route POST /api/primeiro-registro/cadastrar-face

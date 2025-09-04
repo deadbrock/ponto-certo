@@ -12,7 +12,7 @@ const primeiroRegistroController = require('../../controllers/primeiroRegistroCo
  * @desc Consultar colaborador por CPF para primeiro registro
  * @access Public (sem autenticação - usado pelo totem)
  */
-router.post('/consultar-cpf', primeiroRegistroController.consultarColaboradorPorCpf);
+router.post('/consultar-cpf', primeiroRegistroController.buscarColaboradorPorCpf);
 
 /**
  * @route POST /api/primeiro-registro/cadastrar-face
@@ -21,7 +21,7 @@ router.post('/consultar-cpf', primeiroRegistroController.consultarColaboradorPor
  */
 router.post('/cadastrar-face', 
   primeiroRegistroController.upload.single('image'),
-  primeiroRegistroController.cadastrarFaceEPonto
+  primeiroRegistroController.confirmarERegistrarFace
 );
 
 /**

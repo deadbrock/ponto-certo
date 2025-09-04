@@ -342,9 +342,15 @@ const listarColaboradoresPendentes = async (req, res) => {
   }
 };
 
+// Alias para compatibilidade com rotas
+const buscarColaboradorPorCpf = consultarColaboradorPorCpf;
+const confirmarERegistrarFace = cadastrarFaceEPonto;
+
 module.exports = {
   consultarColaboradorPorCpf,
+  buscarColaboradorPorCpf,
   cadastrarFaceEPonto,
+  confirmarERegistrarFace,
   listarColaboradoresPendentes,
   upload
 };

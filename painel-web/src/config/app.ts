@@ -5,7 +5,7 @@ export const appConfig = {
   
   // URLs do backend - automaticamente detecta ambiente
   BACKEND_URL: process.env.NODE_ENV === 'production' 
-    ? process.env.REACT_APP_BACKEND_URL || 'https://pontodigital-production.up.railway.app/api'
+    ? process.env.REACT_APP_BACKEND_URL || 'https://pontodigitalclean-pegasus.up.railway.app/api'
     : 'http://localhost:3333/api',
   
   // Configurações de autenticação

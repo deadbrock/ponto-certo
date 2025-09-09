@@ -21,6 +21,10 @@ router.post('/login-admin', authController.loginAdmin);
 // GET /api/auth/criar-admin-emergencia
 router.get('/criar-admin-emergencia', authController.criarAdminEmergencia);
 
+// Rota temporária para corrigir constraint de perfil
+// GET /api/auth/corrigir-constraint-perfil
+router.get('/corrigir-constraint-perfil', authController.corrigirConstraintPerfil);
+
 // Endpoint de teste simples (sem autenticação)
 router.get('/test', (req, res) => {
     console.log('🧪 TESTE: Endpoint de teste chamado');

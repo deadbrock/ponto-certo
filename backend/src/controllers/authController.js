@@ -288,9 +288,64 @@ const criarAdminEmergencia = async (req, res) => {
     }
 };
 
+// Endpoint temporário para corrigir constraint
+const corrigirConstraintPerfil = async (req, res) => {
+    try {
+        console.log('🔧 Executando correção da constraint de perfil...');
+        
+        // 1. Verificar constraint atual
+        const verificarConstraint = `
+            SELECT conname, consrc 
+            FROM pg_constraint 
+            WHERE conname = 'usuarios_perfil_check'
+        `;
+        const constraintResult = await db.query(verificarConstraint);
+        
+        // 2. Remover constraint existente
+        if (constraintResult.rows.length > 0) {
+            await db.query('ALTER TABLE usuarios DROP CONSTRAINT usuarios_perfil_check');
+        }
+        
+        // 3. Padronizar perfis existentes
+        await db.query(`
+            UPDATE usuarios 
+            SET perfil = UPPER(perfil) 
+            WHERE perfil IN ('administrador', 'rh', 'colaborador', 'gestor')
+        `);
+        
+        // 4. Criar nova constraint
+        await db.query(`
+            ALTER TABLE usuarios 
+            ADD CONSTRAINT usuarios_perfil_check 
+            CHECK (perfil IN ('ADMINISTRADOR', 'RH', 'COLABORADOR', 'GESTOR'))
+        `);
+        
+        // 5. Verificar resultado
+        const constraintFinal = await db.query(verificarConstraint);
+        const usuariosFinal = await db.query('SELECT id, nome, email, perfil FROM usuarios');
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Constraint de perfil corrigida com sucesso',
+            constraint_anterior: constraintResult.rows,
+            constraint_atual: constraintFinal.rows,
+            usuarios: usuariosFinal.rows
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro ao corrigir constraint:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Erro ao corrigir constraint',
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     loginAdmin,
-    criarAdminEmergencia
+    criarAdminEmergencia,
+    corrigirConstraintPerfil
 }; 

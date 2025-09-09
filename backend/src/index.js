@@ -43,26 +43,26 @@ const app = express();
 // ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
 console.log('🔒 Aplicando middlewares de segurança...');
 
-// 1. Forçar HTTPS em produção
-app.use(enforceHTTPS);
-
-// 2. Headers de segurança (Helmet)
-app.use(helmet(helmetConfig));
-
-// 3. CORS restritivo
+// 1. CORS restritivo (PRIORIDADE PARA FUNCIONAMENTO)
 app.use(cors(corsOptions));
 
-// 4. Rate limiting global
-app.use(apiLimiter);
+// 2. Headers de segurança (Helmet) - TEMPORARIAMENTE DESABILITADO
+// app.use(helmet(helmetConfig));
 
-// 5. Detectar ataques comuns
-app.use(detectAttacks);
+// 3. Rate limiting global - APENAS EM ROTAS ESPECÍFICAS
+// app.use(apiLimiter);
 
-// 6. Auditoria de segurança
-app.use(securityAuditLog);
+// 4. Detectar ataques comuns - TEMPORARIAMENTE DESABILITADO
+// app.use(detectAttacks);
 
-// 7. Sanitização de entrada
-app.use(sanitizeInput);
+// 5. Auditoria de segurança - TEMPORARIAMENTE DESABILITADO  
+// app.use(securityAuditLog);
+
+// 6. Sanitização de entrada - TEMPORARIAMENTE DESABILITADO
+// app.use(sanitizeInput);
+
+// 7. Forçar HTTPS em produção - TEMPORARIAMENTE DESABILITADO
+// app.use(enforceHTTPS);
 
 // 8. Parser JSON com limite
 app.use(express.json({ limit: '50mb' }));

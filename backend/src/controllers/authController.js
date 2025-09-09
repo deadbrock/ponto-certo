@@ -151,7 +151,36 @@ const criarAdminEmergencia = async (req, res) => {
     try {
         console.log('🚨 Criando/verificando usuário administrador de emergência...');
         
-        // 1. Verificar se a tabela usuarios existe e tem a estrutura correta
+        // 1. Verificar e corrigir constraint de perfil primeiro
+        try {
+            console.log('🔧 Verificando constraint de perfil...');
+            
+            // Remover constraint existente se houver
+            const constraintQuery = `
+                SELECT conname FROM pg_constraint 
+                WHERE conname = 'usuarios_perfil_check'
+            `;
+            const constraintResult = await db.query(constraintQuery);
+            
+            if (constraintResult.rows.length > 0) {
+                console.log('🗑️ Removendo constraint antiga...');
+                await db.query('ALTER TABLE usuarios DROP CONSTRAINT usuarios_perfil_check');
+            }
+            
+            // Criar nova constraint com valores corretos
+            console.log('➕ Criando constraint corrigida...');
+            await db.query(`
+                ALTER TABLE usuarios 
+                ADD CONSTRAINT usuarios_perfil_check 
+                CHECK (perfil IN ('ADMINISTRADOR', 'RH', 'COLABORADOR', 'GESTOR', 'administrador', 'rh', 'colaborador', 'gestor'))
+            `);
+            console.log('✅ Constraint de perfil corrigida');
+            
+        } catch (constraintError) {
+            console.log('⚠️ Aviso constraint:', constraintError.message);
+        }
+        
+        // 2. Verificar se a tabela usuarios existe e tem a estrutura correta
         try {
             const estruturaQuery = `
                 SELECT column_name, data_type 
@@ -179,7 +208,7 @@ const criarAdminEmergencia = async (req, res) => {
             console.error('❌ Erro verificando estrutura:', estructError.message);
         }
         
-        // 2. Verificar se já existe usuário admin
+        // 3. Verificar se já existe usuário admin
         const verificarQuery = 'SELECT * FROM usuarios WHERE email = $1';
         const verificarResult = await db.query(verificarQuery, ['admin@fgservices.com']);
         

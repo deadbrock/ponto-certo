@@ -42,6 +42,7 @@ const analyticsRoutes = require('./api/routes/analyticsRoutes');
 const contratosRoutes = require('./api/routes/contratosRoutes');
 const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
 const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
+const lgpdRoutes = require('./api/routes/lgpdRoutes');
 
 const app = express();
 
@@ -183,6 +184,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/contratos', contratosRoutes);
 app.use('/api/primeiro-registro', primeiroRegistroRoutes);
 app.use('/api/consentimento', consentimentoRoutes);
+app.use('/api/lgpd', lgpdRoutes);
 
 app.get('/db-test', async (req, res) => {
     try {

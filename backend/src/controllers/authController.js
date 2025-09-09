@@ -295,7 +295,7 @@ const corrigirConstraintPerfil = async (req, res) => {
         
         // 1. Verificar constraint atual
         const verificarConstraint = `
-            SELECT conname, consrc 
+            SELECT conname 
             FROM pg_constraint 
             WHERE conname = 'usuarios_perfil_check'
         `;
@@ -327,8 +327,8 @@ const corrigirConstraintPerfil = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: 'Constraint de perfil corrigida com sucesso',
-            constraint_anterior: constraintResult.rows,
-            constraint_atual: constraintFinal.rows,
+            constraint_existia_antes: constraintResult.rows.length > 0,
+            constraint_existe_agora: constraintFinal.rows.length > 0,
             usuarios: usuariosFinal.rows
         });
         

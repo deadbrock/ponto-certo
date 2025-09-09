@@ -122,10 +122,12 @@ const criarTabelasEssenciais = async () => {
     const adminExists = await db.query('SELECT id FROM usuarios WHERE email = $1', ['admin@fgservices.com']);
     
     if (adminExists.rows.length === 0) {
+      const bcrypt = require('bcrypt');
+      const senhaHash = await bcrypt.hash('admin123', 10);
       await db.query(`
         INSERT INTO usuarios (nome, email, senha_hash, perfil) 
-        VALUES ('Administrador FG', 'admin@fgservices.com', 'admin123', 'ADMINISTRADOR')
-      `);
+        VALUES ('Administrador FG', 'admin@fgservices.com', $1, 'ADMINISTRADOR')
+      `, [senhaHash]);
       console.log('✅ Usuário admin criado: admin@fgservices.com / admin123');
     }
 

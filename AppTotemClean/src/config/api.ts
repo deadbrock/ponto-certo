@@ -10,18 +10,18 @@ const getServerUrl = async (): Promise<string> => {
       return 'http://10.0.2.2:3333';
     } else {
       // Para dispositivo físico: usar IP da rede local
-      return 'http://192.168.1.99:3333';
+      return 'http://192.168.56.1:3333';
     }
   } catch (error) {
     console.warn('Erro ao detectar emulador, usando IP da rede local:', error);
-    return 'http://192.168.1.99:3333';
+    return 'http://192.168.56.1:3333';
   }
 };
 
 // Configurações da API Backend
 export const API_CONFIG = {
   // Backend Node.js/Express com PostgreSQL
-  BASE_URL: 'http://192.168.1.99:3333', // Será sobrescrito dinamicamente
+  BASE_URL: 'http://192.168.56.1:3333', // Será sobrescrito dinamicamente
   
   ENDPOINTS: {
     FACE_RECOGNITION: '/api/face/face-recognition/',

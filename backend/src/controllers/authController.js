@@ -227,10 +227,10 @@ const criarAdminEmergencia = async (req, res) => {
         `;
         
         const criarResult = await db.query(criarQuery, [
-            'Administrador',
+            'Administrador FG',
             'admin@fgservices.com', 
             senhaHash,
-            'administrador',
+            'ADMINISTRADOR',
             true
         ]);
         

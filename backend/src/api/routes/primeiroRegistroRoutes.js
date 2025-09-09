@@ -16,6 +16,8 @@ router.post('/consultar-cpf', async (req, res) => {
   try {
     const { cpf } = req.body;
     
+    console.log('🔍 Consultando CPF:', cpf);
+    
     if (!cpf) {
       return res.status(400).json({
         success: false,
@@ -25,24 +27,18 @@ router.post('/consultar-cpf', async (req, res) => {
 
     const db = require('../../config/database');
     
-    // Primeiro, verificar/adicionar colunas necessárias
-    try {
-      await db.query('ALTER TABLE colaboradores ADD COLUMN IF NOT EXISTS data_nascimento DATE');
-      await db.query('ALTER TABLE colaboradores ADD COLUMN IF NOT EXISTS face_cadastrada BOOLEAN DEFAULT false');
-    } catch (alterError) {
-      console.log('Colunas já existem ou erro ao criar:', alterError.message);
-    }
-    
-    // Buscar colaborador (usando apenas campos que certamente existem)
+    // Buscar colaborador usando apenas campos básicos
     const query = `
-      SELECT id, nome, cpf, cargo, departamento
+      SELECT id, nome, cpf, email, cargo, departamento
       FROM colaboradores 
-      WHERE cpf = $1 AND ativo = true
+      WHERE cpf = $1
+      LIMIT 1
     `;
     
     const result = await db.query(query, [cpf]);
     
     if (result.rows.length === 0) {
+      console.log('❌ CPF não encontrado:', cpf);
       return res.status(404).json({
         success: false,
         message: 'CPF não encontrado no sistema. Verifique com o RH.'
@@ -50,23 +46,27 @@ router.post('/consultar-cpf', async (req, res) => {
     }
     
     const colaborador = result.rows[0];
+    console.log('✅ Colaborador encontrado:', colaborador.nome);
     
     return res.status(200).json({
       success: true,
-      message: 'Colaborador encontrado!',
+      message: 'Colaborador encontrado! Confirme os dados para continuar.',
       colaborador: {
         id: colaborador.id,
         nome: colaborador.nome,
         cpf: colaborador.cpf,
         cargo: colaborador.cargo || 'Colaborador',
         departamento: colaborador.departamento || 'Geral',
-        data_nascimento: '1990-01-01', // Data padrão para teste
+        email: colaborador.email || '',
+        // Dados simulados para teste
+        data_nascimento: '1990-05-15',
         face_cadastrada: false
-      }
+      },
+      instrucoes: 'Confirme se o nome está correto e prossiga para o cadastro da face'
     });
     
   } catch (error) {
-    console.error('Erro ao consultar CPF:', error);
+    console.error('❌ Erro ao consultar CPF:', error);
     return res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',

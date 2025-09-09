@@ -342,10 +342,68 @@ const corrigirConstraintPerfil = async (req, res) => {
     }
 };
 
+// Endpoint de teste para validar constraint
+const testarConstraint = async (req, res) => {
+    try {
+        console.log('🧪 Testando constraint de perfil...');
+        
+        // Teste 1: Tentar criar usuário com perfil válido (deve funcionar)
+        const bcrypt = require('bcrypt');
+        const senhaHashTeste = await bcrypt.hash('teste123', 10);
+        
+        try {
+            await db.query(`
+                INSERT INTO usuarios (nome, email, senha_hash, perfil, ativo) 
+                VALUES ('Teste RH Válido', 'teste.rh.valido@test.com', $1, 'RH', true)
+            `, [senhaHashTeste]);
+            console.log('✅ Teste 1 passou: Perfil RH aceito');
+        } catch (err1) {
+            console.log('❌ Teste 1 falhou:', err1.message);
+        }
+        
+        // Teste 2: Tentar criar usuário com perfil inválido (deve falhar)
+        let teste2Falhou = false;
+        try {
+            await db.query(`
+                INSERT INTO usuarios (nome, email, senha_hash, perfil, ativo) 
+                VALUES ('Teste Inválido', 'teste.invalido@test.com', $1, 'PERFIL_INVALIDO', true)
+            `, [senhaHashTeste]);
+            console.log('❌ Teste 2 falhou: Perfil inválido foi aceito (não deveria)');
+        } catch (err2) {
+            console.log('✅ Teste 2 passou: Perfil inválido rejeitado corretamente');
+            teste2Falhou = true;
+        }
+        
+        // Limpar dados de teste
+        await db.query("DELETE FROM usuarios WHERE email LIKE '%@test.com'");
+        
+        // Verificar usuários existentes
+        const usuarios = await db.query('SELECT id, nome, email, perfil FROM usuarios');
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Teste de constraint concluído',
+            teste_perfil_valido: 'RH aceito',
+            teste_perfil_invalido: teste2Falhou ? 'PERFIL_INVALIDO rejeitado (correto)' : 'PERFIL_INVALIDO aceito (erro)',
+            constraint_funcionando: teste2Falhou,
+            usuarios_atuais: usuarios.rows
+        });
+        
+    } catch (error) {
+        console.error('❌ Erro no teste:', error);
+        return res.status(500).json({
+            success: false,
+            error: 'Erro no teste de constraint',
+            details: error.message
+        });
+    }
+};
+
 module.exports = {
     register,
     login,
     loginAdmin,
     criarAdminEmergencia,
-    corrigirConstraintPerfil
+    corrigirConstraintPerfil,
+    testarConstraint
 }; 

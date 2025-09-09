@@ -64,11 +64,11 @@ app.use(cors(corsOptions));
 // 7. Forçar HTTPS em produção - TEMPORARIAMENTE DESABILITADO
 // app.use(enforceHTTPS);
 
-// 8. Parser JSON com limite
+// 8. Parser JSON com limite (aumentar limite para imagens base64)
 app.use(express.json({ limit: '50mb' }));
-
-console.log('✅ Middlewares de segurança aplicados'); // Aumentar limite para imagens base64
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+console.log('✅ Middlewares de segurança aplicados');
 
 const PORT = process.env.PORT || 3333;
 

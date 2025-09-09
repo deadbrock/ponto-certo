@@ -1,22 +1,36 @@
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 // Models comentados para evitar erros - usando queries diretas
 // const RegistroPonto = require('../models/registroPontoModel');
 // const Colaborador = require('../models/colaboradorModel');
 
-// Configuração do multer para upload de imagens
+// Importar utilitários de segurança biométrica
+const {
+  generateBiometricKey,
+  encryptBiometricData,
+  encryptFaceImage,
+  generateBiometricHash,
+  secureBiometricDirectory,
+  logBiometricOperation
+} = require('../utils/biometricSecurity');
+
+// Configuração do multer para upload de imagens com segurança
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, '../uploads/faces');
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
+    // Aplicar permissões seguras no diretório
+    secureBiometricDirectory(uploadPath);
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `image-${uniqueSuffix}.jpg`);
+    const secureHash = generateBiometricHash(uniqueSuffix.toString());
+    cb(null, `face-${secureHash.substring(0, 16)}.jpg`);
   }
 });
 

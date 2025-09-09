@@ -59,7 +59,8 @@ const login = async (req, res) => {
 const loginAdmin = async (req, res) => {
     console.log('🔐 LOGIN ADMIN: Tentativa de login recebida');
     console.log('📋 Headers:', req.headers);
-    console.log('📦 Body:', req.body);
+    // ❌ REMOVIDO: Não logar body completo por conter senhas
+    console.log('📦 Body recebido (email apenas):', { email: req.body.email });
     
     const { email, senha } = req.body;
     
@@ -98,7 +99,7 @@ const loginAdmin = async (req, res) => {
             senha_hash_presente: !!usuario.senha_hash
         });
 
-        console.log(`🔐 Comparando senha '${senha}' com hash...`);
+        console.log(`🔐 Comparando senha com hash...`); // ❌ NUNCA LOGAR SENHAS
         
         // Verificar senha
         const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);

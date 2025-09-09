@@ -1,8 +1,20 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const db = require('./config/database');
 const { criarTabelasEssenciais } = require('./database/schema');
+
+// Importar middlewares de segurança
+const { apiLimiter } = require('./api/middlewares/rateLimitMiddleware');
+const { 
+  corsOptions, 
+  helmetConfig, 
+  enforceHTTPS, 
+  detectAttacks, 
+  securityAuditLog, 
+  sanitizeInput 
+} = require('./api/middlewares/securityMiddleware');
 
 const authRoutes = require('./api/routes/authRoutes');
 const pontoRoutes = require('./api/routes/pontoRoutes');
@@ -24,11 +36,38 @@ const notificacoesRoutes = require('./api/routes/notificacoesRoutes');
 const analyticsRoutes = require('./api/routes/analyticsRoutes');
 const contratosRoutes = require('./api/routes/contratosRoutes');
 const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
+const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 
 const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Aumentar limite para imagens base64
+// ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
+console.log('🔒 Aplicando middlewares de segurança...');
+
+// 1. Forçar HTTPS em produção
+app.use(enforceHTTPS);
+
+// 2. Headers de segurança (Helmet)
+app.use(helmet(helmetConfig));
+
+// 3. CORS restritivo
+app.use(cors(corsOptions));
+
+// 4. Rate limiting global
+app.use(apiLimiter);
+
+// 5. Detectar ataques comuns
+app.use(detectAttacks);
+
+// 6. Auditoria de segurança
+app.use(securityAuditLog);
+
+// 7. Sanitização de entrada
+app.use(sanitizeInput);
+
+// 8. Parser JSON com limite
+app.use(express.json({ limit: '50mb' }));
+
+console.log('✅ Middlewares de segurança aplicados'); // Aumentar limite para imagens base64
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const PORT = process.env.PORT || 3333;
@@ -56,7 +95,8 @@ app.get('/', (req, res) => {
             notificacoes: '/api/notificacoes',
             analytics: '/api/analytics',
             contratos: '/api/contratos',
-            "primeiro-registro": '/api/primeiro-registro'
+            "primeiro-registro": '/api/primeiro-registro',
+            consentimento: '/api/consentimento'
         }
     });
 });
@@ -105,18 +145,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Middleware de CORS
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
-    if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
-});
+// ❌ REMOVIDO: CORS antigo inseguro substituído por configuração restritiva
 
 // Registrar rotas
 app.use('/api/auth', authRoutes);
@@ -139,6 +168,7 @@ app.use('/api/notificacoes', notificacoesRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/contratos', contratosRoutes);
 app.use('/api/primeiro-registro', primeiroRegistroRoutes);
+app.use('/api/consentimento', consentimentoRoutes);
 
 app.get('/db-test', async (req, res) => {
     try {

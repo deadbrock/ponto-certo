@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../../controllers/authController');
+const { loginLimiter } = require('../middlewares/rateLimitMiddleware');
 
 // ❌ NÃO aplicar middleware de autenticação nas rotas de login!
 // As rotas de login devem ser públicas
@@ -9,13 +10,13 @@ const authController = require('../../controllers/authController');
 // POST /api/auth/register
 router.post('/register', authController.register);
 
-// Rota para login do colaborador
+// Rota para login do colaborador - COM RATE LIMITING
 // POST /api/auth/login
-router.post('/login', authController.login);
+router.post('/login', loginLimiter, authController.login);
 
-// Rota para login de usuários administrativos (painel web)
+// Rota para login de usuários administrativos (painel web) - COM RATE LIMITING
 // POST /api/auth/login-admin
-router.post('/login-admin', authController.loginAdmin);
+router.post('/login-admin', loginLimiter, authController.loginAdmin);
 
 // Rota de emergência para criar usuário administrador
 // GET /api/auth/criar-admin-emergencia

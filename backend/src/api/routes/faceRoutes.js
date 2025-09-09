@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { recognizeFace, addPerson, listPersons, resetSystem, registerPointByFace, upload } = require('../../controllers/faceController');
+const { faceRecognitionLimiter } = require('../middlewares/rateLimitMiddleware');
 
-// Rota para reconhecimento facial
-router.post('/face-recognition', upload.single('image'), recognizeFace);
-// Alias para compatibilidade com apps que usam /recognize
-router.post('/recognize', upload.single('image'), recognizeFace);
+// Rota para reconhecimento facial - COM RATE LIMITING
+router.post('/face-recognition', faceRecognitionLimiter, upload.single('image'), recognizeFace);
+// Alias para compatibilidade com apps que usam /recognize - COM RATE LIMITING
+router.post('/recognize', faceRecognitionLimiter, upload.single('image'), recognizeFace);
 
 // Rota para adicionar nova pessoa
 router.post('/add-person', upload.single('image'), addPerson);

@@ -17,7 +17,8 @@ const authMiddleware = (req, res, next) => {
     try {
         // Usar a mesma chave que está no loginAdmin
         const jwtSecret = process.env.JWT_SECRET || 'ponto-digital-jwt-secret-key-2024';
-        console.log('🔑 AuthMiddleware: Usando JWT_SECRET:', jwtSecret);
+        // ❌ REMOVIDO: NUNCA logar JWT_SECRET
+        console.log('🔑 AuthMiddleware: Usando JWT_SECRET configurado');
         
         const decoded = jwt.verify(token, jwtSecret);
         console.log('✅ AuthMiddleware: Token válido, usuário:', decoded);

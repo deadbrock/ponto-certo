@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const usuarioController = require('../../controllers/usuarioController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const { requireAdminOrRH, requireAdmin } = require('../middlewares/roleMiddleware');
 
 // Todas as rotas de usuários requerem autenticação
 router.use(authMiddleware);
@@ -16,14 +17,14 @@ router.use(authMiddleware);
  * @query {string} perfil - Filtro por perfil
  * @query {boolean} ativo - Filtro por status ativo
  */
-router.get('/', usuarioController.listarUsuarios);
+router.get('/', requireAdminOrRH, usuarioController.listarUsuarios);
 
 /**
  * @route POST /api/usuarios
  * @desc Cadastrar novo usuário
- * @access Private
+ * @access Private (Admin ou RH)
  */
-router.post('/', usuarioController.cadastrarUsuario);
+router.post('/', requireAdminOrRH, usuarioController.cadastrarUsuario);
 
 /**
  * @route PUT /api/usuarios/:id

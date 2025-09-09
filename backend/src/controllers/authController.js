@@ -57,32 +57,30 @@ const login = async (req, res) => {
 
 // Login para usuários administrativos (painel web)
 const loginAdmin = async (req, res) => {
-    console.log('🔐 LOGIN ADMIN: Tentativa de login recebida');
-    console.log('📋 Headers:', req.headers);
-    // ❌ REMOVIDO: Não logar body completo por conter senhas
-    console.log('📦 Body recebido (email apenas):', { email: req.body.email });
+    const secureLogger = require('../utils/secureLogger');
+    secureLogger.info('Tentativa de login admin recebida');
     
     const { email, senha } = req.body;
     
     if (!email || !senha) {
-        console.log('❌ LOGIN ADMIN: Email ou senha não fornecidos');
+        secureLogger.security('warning', 'Tentativa de login admin sem credenciais completas', {
+            hasEmail: !!email,
+            hasPassword: !!senha,
+            ip: req.ip
+        });
         return res.status(400).json({ 
             success: false,
             error: 'Email e senha são obrigatórios.' 
         });
     }
-    
-    console.log(`🔍 LOGIN ADMIN: Tentando login para email: ${email}`);
 
     try {
         // Buscar usuário na tabela usuarios
         const query = 'SELECT * FROM usuarios WHERE email = $1 AND ativo = true';
         const result = await db.query(query, [email]);
         
-        console.log(`📊 Usuários encontrados: ${result.rows.length}`);
-        
         if (result.rows.length === 0) {
-            console.log('❌ LOGIN ADMIN: Usuário não encontrado');
+            secureLogger.loginAttempt(email, false, req.ip, req.headers['user-agent']);
             return res.status(401).json({ 
                 success: false,
                 error: 'Credenciais inválidas.' 
@@ -90,23 +88,11 @@ const loginAdmin = async (req, res) => {
         }
 
         const usuario = result.rows[0];
-        console.log('👤 Usuário encontrado:', {
-            id: usuario.id,
-            nome: usuario.nome,
-            email: usuario.email,
-            perfil: usuario.perfil,
-            ativo: usuario.ativo,
-            senha_hash_presente: !!usuario.senha_hash
-        });
-
-        console.log(`🔐 Comparando senha com hash...`); // ❌ NUNCA LOGAR SENHAS
         
         // Verificar senha
         const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
-        console.log(`🔍 Resultado da comparação: ${senhaValida}`);
-        
         if (!senhaValida) {
-            console.log('❌ LOGIN ADMIN: Senha inválida');
+            secureLogger.loginAttempt(email, false, req.ip, req.headers['user-agent']);
             return res.status(401).json({ 
                 success: false,
                 error: 'Credenciais inválidas.' 
@@ -127,8 +113,13 @@ const loginAdmin = async (req, res) => {
         // Retornar dados do usuário (sem a senha)
         const { senha_hash, ...usuarioSemSenha } = usuario;
 
-        console.log('✅ LOGIN ADMIN: Login bem-sucedido!');
-        console.log('📋 Usuário:', usuarioSemSenha);
+        // Log de login bem-sucedido
+        secureLogger.loginAttempt(email, true, req.ip, req.headers['user-agent']);
+        secureLogger.audit('LOGIN_SUCCESS', usuario.id, {
+            userProfile: usuario.perfil,
+            ip: req.ip,
+            timestamp: new Date().toISOString()
+        });
 
         return res.status(200).json({ 
             success: true,

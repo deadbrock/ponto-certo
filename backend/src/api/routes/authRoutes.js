@@ -18,9 +18,32 @@ router.post('/login', loginLimiter, authController.login);
 // POST /api/auth/login-admin
 router.post('/login-admin', loginLimiter, authController.loginAdmin);
 
-// Rota de emergência para criar usuário administrador
+// Rota de emergência para criar usuário administrador - PROTEGIDA
 // GET /api/auth/criar-admin-emergencia
-router.get('/criar-admin-emergencia', authController.criarAdminEmergencia);
+const emergencyMiddleware = (req, res, next) => {
+  const emergencyKey = req.headers['x-emergency-key'];
+  const expectedKey = process.env.EMERGENCY_KEY || 'fg-services-emergency-2024';
+  
+  if (!emergencyKey || emergencyKey !== expectedKey) {
+    const secureLogger = require('../../utils/secureLogger');
+    secureLogger.security('critical', 'Tentativa de acesso não autorizado ao endpoint de emergência', {
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      providedKey: emergencyKey ? '[PROVIDED]' : '[MISSING]',
+      timestamp: new Date().toISOString()
+    });
+    
+    return res.status(403).json({
+      success: false,
+      error: 'Chave de emergência inválida ou ausente',
+      message: 'Este endpoint requer autorização especial. Entre em contato com o administrador do sistema.'
+    });
+  }
+  
+  next();
+};
+
+router.get('/criar-admin-emergencia', emergencyMiddleware, authController.criarAdminEmergencia);
 
 // Rota temporária para corrigir constraint de perfil
 // GET /api/auth/corrigir-constraint-perfil

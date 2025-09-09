@@ -16,6 +16,11 @@ const {
   sanitizeInput 
 } = require('./api/middlewares/securityMiddleware');
 
+// Importar novos middlewares de segurança
+const secureLogger = require('./utils/secureLogger');
+const { auditMiddleware, auditAccessDenied } = require('./api/middlewares/auditMiddleware');
+const { requireAdmin, requireAdminOrRH } = require('./api/middlewares/roleMiddleware');
+
 const authRoutes = require('./api/routes/authRoutes');
 const pontoRoutes = require('./api/routes/pontoRoutes');
 const faceRoutes = require('./api/routes/faceRoutes');
@@ -41,28 +46,37 @@ const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 const app = express();
 
 // ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
-console.log('🔒 Aplicando middlewares de segurança...');
+console.log('🔒 Aplicando middlewares de segurança avançados...');
 
-// 1. CORS restritivo (PRIORIDADE PARA FUNCIONAMENTO)
+// 1. CORS restritivo
 app.use(cors(corsOptions));
 
-// 2. Headers de segurança (Helmet) - TEMPORARIAMENTE DESABILITADO
-// app.use(helmet(helmetConfig));
+// 2. Headers de segurança (Helmet) - REATIVADO
+app.use(helmet(helmetConfig));
 
-// 3. Rate limiting global - APENAS EM ROTAS ESPECÍFICAS
-// app.use(apiLimiter);
+// 3. Forçar HTTPS em produção
+if (process.env.NODE_ENV === 'production') {
+  app.use(enforceHTTPS);
+}
 
-// 4. Detectar ataques comuns - TEMPORARIAMENTE DESABILITADO
-// app.use(detectAttacks);
+// 4. Rate limiting global
+app.use(apiLimiter);
 
-// 5. Auditoria de segurança - TEMPORARIAMENTE DESABILITADO  
-// app.use(securityAuditLog);
+// 5. Detectar ataques comuns - REATIVADO
+app.use(detectAttacks);
 
-// 6. Sanitização de entrada - TEMPORARIAMENTE DESABILITADO
-// app.use(sanitizeInput);
+// 6. Sistema de auditoria completo - NOVO
+app.use(auditMiddleware);
+app.use(auditAccessDenied);
 
-// 7. Forçar HTTPS em produção - TEMPORARIAMENTE DESABILITADO
-// app.use(enforceHTTPS);
+// 7. Sanitização de entrada - REATIVADO
+app.use(sanitizeInput);
+
+// 8. Log de inicialização seguro
+secureLogger.security('info', 'Sistema iniciado com middlewares de segurança completos', {
+  environment: process.env.NODE_ENV || 'development',
+  timestamp: new Date().toISOString()
+});
 
 // 8. Parser JSON com limite (aumentar limite para imagens base64)
 app.use(express.json({ limit: '50mb' }));

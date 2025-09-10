@@ -60,6 +60,16 @@ const corsRoutes = require('./api/routes/corsRoutes');
 
 const app = express();
 
+// ===== CONFIGURAÇÃO TRUST PROXY PARA RAILWAY =====
+// Railway usa proxy reverso, precisamos confiar nos headers X-Forwarded-*
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', true);
+  console.log('🔧 Trust proxy habilitado para produção (Railway)');
+} else {
+  app.set('trust proxy', 'loopback');
+  console.log('🔧 Trust proxy configurado para desenvolvimento');
+}
+
 // ===== HEALTH CHECK ENDPOINT (ANTES DOS MIDDLEWARES) =====
 app.get('/', (req, res) => {
   res.status(200).json({

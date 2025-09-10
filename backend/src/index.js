@@ -14,13 +14,14 @@ const {
   sanitizeInput 
 } = require('./api/middlewares/securityMiddleware');
 
-// Importar CORS SUPER RESTRITIVO
-const { 
-  corsOptions, 
-  corsAuditMiddleware, 
-  corsSecurityMiddleware, 
-  blockMaliciousOrigins 
-} = require('./api/middlewares/corsMiddleware');
+// CORS BÁSICO TEMPORÁRIO (para estabilizar sistema)
+const corsOptions = {
+  origin: true, // Permitir todas as origins temporariamente
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  maxAge: 86400
+};
 
 // Importar middlewares HTTPS OBRIGATÓRIO
 const { 
@@ -56,7 +57,7 @@ const contratosRoutes = require('./api/routes/contratosRoutes');
 const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
 const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 const lgpdRoutes = require('./api/routes/lgpdRoutes');
-const corsRoutes = require('./api/routes/corsRoutes');
+// const corsRoutes = require('./api/routes/corsRoutes'); // TEMPORARIAMENTE DESABILITADO
 
 const app = express();
 
@@ -114,12 +115,9 @@ app.get('/health', async (req, res) => {
 // ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
 console.log('🔒 Aplicando middlewares de segurança avançados...');
 
-// 1. CORS SUPER RESTRITIVO - Múltiplas camadas de segurança
-console.log('🛡️ Ativando CORS SUPER RESTRITIVO...');
-app.use(blockMaliciousOrigins);    // Bloquear origins maliciosas
-app.use(corsSecurityMiddleware);   // Detectar tentativas de bypass
-app.use(cors(corsOptions));        // CORS principal
-app.use(corsAuditMiddleware);      // Auditoria de requests CORS
+// 1. CORS BÁSICO TEMPORÁRIO (para estabilizar)
+console.log('🔧 Ativando CORS básico temporário...');
+app.use(cors(corsOptions));
 
 // 2. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
@@ -257,7 +255,7 @@ app.use('/api/contratos', contratosRoutes);
 app.use('/api/primeiro-registro', primeiroRegistroRoutes);
 app.use('/api/consentimento', consentimentoRoutes);
 app.use('/api/lgpd', lgpdRoutes);
-app.use('/api/cors', corsRoutes);
+// app.use('/api/cors', corsRoutes); // TEMPORARIAMENTE DESABILITADO
 
 app.get('/db-test', async (req, res) => {
     try {

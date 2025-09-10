@@ -10,11 +10,17 @@ const { apiLimiter } = require('./api/middlewares/rateLimitMiddleware');
 const { 
   corsOptions, 
   helmetConfig, 
-  enforceHTTPS, 
   detectAttacks, 
   securityAuditLog, 
   sanitizeInput 
 } = require('./api/middlewares/securityMiddleware');
+
+// Importar middlewares HTTPS OBRIGATÓRIO
+const { 
+  enforceHTTPS, 
+  strictCSP, 
+  validateSSL 
+} = require('./api/middlewares/httpsMiddleware');
 
 // Importar novos middlewares de segurança
 const secureLogger = require('./utils/secureLogger');
@@ -96,9 +102,12 @@ app.use(cors(corsOptions));
 // 2. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
 
-// 3. Forçar HTTPS em produção
+// 3. HTTPS OBRIGATÓRIO em produção - POLÍTICAS RIGOROSAS
 if (process.env.NODE_ENV === 'production') {
-  app.use(enforceHTTPS);
+  console.log('🔒 Ativando HTTPS OBRIGATÓRIO...');
+  app.use(validateSSL);     // Validar certificado SSL
+  app.use(enforceHTTPS);    // Forçar HTTPS com redirecionamento
+  app.use(strictCSP);       // Content Security Policy rigorosa
 }
 
 // 4. Rate limiting global

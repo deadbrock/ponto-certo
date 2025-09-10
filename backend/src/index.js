@@ -8,12 +8,19 @@ const { criarTabelasEssenciais } = require('./database/schema');
 // Importar middlewares de segurança
 const { apiLimiter } = require('./api/middlewares/rateLimitMiddleware');
 const { 
-  corsOptions, 
   helmetConfig, 
   detectAttacks, 
   securityAuditLog, 
   sanitizeInput 
 } = require('./api/middlewares/securityMiddleware');
+
+// Importar CORS SUPER RESTRITIVO
+const { 
+  corsOptions, 
+  corsAuditMiddleware, 
+  corsSecurityMiddleware, 
+  blockMaliciousOrigins 
+} = require('./api/middlewares/corsMiddleware');
 
 // Importar middlewares HTTPS OBRIGATÓRIO
 const { 
@@ -49,6 +56,7 @@ const contratosRoutes = require('./api/routes/contratosRoutes');
 const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
 const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 const lgpdRoutes = require('./api/routes/lgpdRoutes');
+const corsRoutes = require('./api/routes/corsRoutes');
 
 const app = express();
 
@@ -96,8 +104,12 @@ app.get('/health', async (req, res) => {
 // ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
 console.log('🔒 Aplicando middlewares de segurança avançados...');
 
-// 1. CORS restritivo
-app.use(cors(corsOptions));
+// 1. CORS SUPER RESTRITIVO - Múltiplas camadas de segurança
+console.log('🛡️ Ativando CORS SUPER RESTRITIVO...');
+app.use(blockMaliciousOrigins);    // Bloquear origins maliciosas
+app.use(corsSecurityMiddleware);   // Detectar tentativas de bypass
+app.use(cors(corsOptions));        // CORS principal
+app.use(corsAuditMiddleware);      // Auditoria de requests CORS
 
 // 2. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
@@ -235,6 +247,7 @@ app.use('/api/contratos', contratosRoutes);
 app.use('/api/primeiro-registro', primeiroRegistroRoutes);
 app.use('/api/consentimento', consentimentoRoutes);
 app.use('/api/lgpd', lgpdRoutes);
+app.use('/api/cors', corsRoutes);
 
 app.get('/db-test', async (req, res) => {
     try {

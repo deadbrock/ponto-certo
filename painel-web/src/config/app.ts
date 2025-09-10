@@ -4,9 +4,7 @@ export const appConfig = {
   MOCK_DATA_ENABLED: false, // ✅ DESABILITADO - usando dados reais
   
   // URLs do backend - HTTPS OBRIGATÓRIO
-  BACKEND_URL: process.env.NODE_ENV === 'production' 
-    ? process.env.REACT_APP_BACKEND_URL || 'https://ponto-certo-production.up.railway.app/api'
-    : 'https://ponto-certo-production.up.railway.app/api', // HTTPS mesmo em dev
+  BACKEND_URL: 'https://ponto-certo-production.up.railway.app/api', // URL FIXA CORRETA
   
   // Configurações de autenticação
   AUTH_TOKEN_KEY: 'token',

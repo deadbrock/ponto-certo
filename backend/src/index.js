@@ -14,12 +14,17 @@ const {
   sanitizeInput 
 } = require('./api/middlewares/securityMiddleware');
 
-// CORS BÁSICO TEMPORÁRIO (para estabilizar sistema)
+// CORS BÁSICO FUNCIONAL (URLs específicas)
 const corsOptions = {
-  origin: true, // Permitir todas as origins temporariamente
+  origin: [
+    'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app',
+    'https://ponto-digital-painel-moiu8yana-douglas-projects-c2be5a2b.vercel.app',
+    'http://localhost:3000'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  optionsSuccessStatus: 200,
   maxAge: 86400
 };
 

@@ -10,10 +10,14 @@ const loginLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  // Registrar tentativas suspeitas
-  onLimitReached: (req, res) => {
+  // Registrar tentativas suspeitas (versão atualizada)
+  handler: (req, res) => {
     console.warn(`🚨 SEGURANÇA: Rate limit excedido para IP ${req.ip} em ${new Date().toISOString()}`);
     console.warn(`🚨 User-Agent: ${req.headers['user-agent']}`);
+    res.status(429).json({
+      error: 'Muitas tentativas de login. Tente novamente em 15 minutos.',
+      code: 'RATE_LIMIT_EXCEEDED'
+    });
   }
 });
 

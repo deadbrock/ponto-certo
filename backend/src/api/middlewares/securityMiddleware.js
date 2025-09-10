@@ -12,7 +12,7 @@ const corsOptions = {
     const allowedOrigins = [
       'https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app',
       'https://ponto-digital-painel-8hf7kmuxj-douglas-projects-c2be5a2b.vercel.app', // Nova URL
-      'https://pontodigitalclean-pegasus.up.railway.app',
+      'https://pontodigitalclean-production.up.railway.app',
       'http://localhost:3000', // Desenvolvimento
       'http://localhost:3333'  // Desenvolvimento backend
     ];

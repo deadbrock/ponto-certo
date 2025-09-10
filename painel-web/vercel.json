@@ -3,13 +3,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "env": {
-    "REACT_APP_BACKEND_URL": "https://pontodigital-production.up.railway.app/api",
+    "REACT_APP_BACKEND_URL": "https://pontodigitalclean-production.up.railway.app/api",
     "GENERATE_SOURCEMAP": "false",
     "CI": "false"
   },
   "build": {
     "env": {
-      "REACT_APP_BACKEND_URL": "https://pontodigital-production.up.railway.app/api",
+      "REACT_APP_BACKEND_URL": "https://pontodigitalclean-production.up.railway.app/api",
       "GENERATE_SOURCEMAP": "false",
       "CI": "false"
     }

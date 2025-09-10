@@ -46,6 +46,47 @@ const lgpdRoutes = require('./api/routes/lgpdRoutes');
 
 const app = express();
 
+// ===== HEALTH CHECK ENDPOINT (ANTES DOS MIDDLEWARES) =====
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'online',
+    service: 'Ponto Digital FG - Backend API',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: '1.0.0'
+  });
+});
+
+app.get('/health', async (req, res) => {
+  try {
+    // Teste rápido de conexão com o banco
+    const result = await db.query('SELECT NOW() as timestamp');
+    
+    res.status(200).json({
+      status: 'healthy',
+      service: 'Ponto Digital FG - Backend API',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
+      database: 'connected',
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + ' MB',
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + ' MB'
+      },
+      database_time: result.rows[0].timestamp
+    });
+  } catch (error) {
+    console.error('❌ Health check falhou:', error.message);
+    res.status(503).json({
+      status: 'unhealthy',
+      service: 'Ponto Digital FG - Backend API',
+      timestamp: new Date().toISOString(),
+      uptime: Math.floor(process.uptime()),
+      database: 'disconnected',
+      error: error.message
+    });
+  }
+});
+
 // ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
 console.log('🔒 Aplicando middlewares de segurança avançados...');
 

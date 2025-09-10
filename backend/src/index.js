@@ -19,6 +19,7 @@ const corsOptions = {
   origin: [
     'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app',
     'https://ponto-digital-painel-moiu8yana-douglas-projects-c2be5a2b.vercel.app',
+    'https://ponto-digital-painel-56a498y1c-douglas-projects-c2be5a2b.vercel.app', // Nova URL
     'http://localhost:3000'
   ],
   credentials: true,

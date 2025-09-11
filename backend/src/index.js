@@ -14,20 +14,45 @@ const {
   sanitizeInput 
 } = require('./api/middlewares/securityMiddleware');
 
-// CORS BÁSICO FUNCIONAL (URLs específicas)
+// CORS RESTRITIVO E SEGURO (conforme cronograma de segurança)
+const getAllowedOrigins = () => {
+  const origins = [];
+  
+  // URL principal do frontend (via env var)
+  if (process.env.CORS_ALLOWED_ORIGINS) {
+    origins.push(...process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim()));
+  }
+  
+  // Fallback para URL padrão atual
+  if (origins.length === 0) {
+    origins.push('https://ponto-digital-painel-dgjzsh4hp-douglas-projects-c2be5a2b.vercel.app');
+  }
+  
+  // Localhost APENAS em desenvolvimento
+  if (process.env.NODE_ENV === 'development') {
+    origins.push('http://localhost:3000');
+  }
+  
+  console.log('🔒 CORS Origins permitidas:', origins);
+  return origins;
+};
+
 const corsOptions = {
-  origin: [
-    'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app',
-    'https://ponto-digital-painel-moiu8yana-douglas-projects-c2be5a2b.vercel.app',
-    'https://ponto-digital-painel-56a498y1c-douglas-projects-c2be5a2b.vercel.app',
-    'https://ponto-digital-painel-dgjzsh4hp-douglas-projects-c2be5a2b.vercel.app', // NOVA URL REBUILD
-    'http://localhost:3000'
-  ],
+  origin: getAllowedOrigins(),
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], // Métodos específicos
+  allowedHeaders: [
+    'Origin', 
+    'X-Requested-With', 
+    'Content-Type', 
+    'Accept', 
+    'Authorization',
+    'X-CSRF-Token' // Adicionar suporte CSRF
+  ],
+  exposedHeaders: ['X-Total-Count'], // Headers que o frontend pode acessar
   optionsSuccessStatus: 200,
-  maxAge: 86400
+  maxAge: 86400, // Cache preflight por 24h
+  preflightContinue: false // Não passar preflight para próximo handler
 };
 
 // HTTPS middlewares removidos - não necessários no Railway (proxy reverso)
@@ -117,8 +142,26 @@ app.get('/health', async (req, res) => {
 // ===== APLICAR MIDDLEWARES DE SEGURANÇA =====
 console.log('🔒 Aplicando middlewares de segurança avançados...');
 
-// 1. CORS BÁSICO TEMPORÁRIO (para estabilizar)
-console.log('🔧 Ativando CORS básico temporário...');
+// 1. CORS RESTRITIVO E SEGURO
+console.log('🔒 Ativando CORS restritivo e seguro...');
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = getAllowedOrigins();
+  
+  // Log de tentativas de acesso
+  if (origin && !allowedOrigins.includes(origin)) {
+    console.warn(`🚨 CORS: Origem bloqueada: ${origin} de IP: ${req.ip}`);
+    secureLogger.warn('CORS_BLOCKED', {
+      origin,
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  next();
+});
+
 app.use(cors(corsOptions));
 
 // 2. Headers de segurança (Helmet) - REATIVADO

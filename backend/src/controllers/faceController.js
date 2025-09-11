@@ -16,6 +16,13 @@ const {
   logBiometricOperation
 } = require('../utils/biometricSecurity');
 
+// Importar gerenciador de chaves biométricas
+const {
+  getMasterBiometricKey,
+  getDerivedKey,
+  logKeyOperation
+} = require('../utils/biometricKeyManager');
+
 // Configuração do multer para upload de imagens com segurança
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -97,6 +104,37 @@ const recognizeFace = async (req, res) => {
     console.log(`📸 Imagem recebida: ${imagePath}`);
     console.log(`📍 Coordenadas: ${latitude}, ${longitude}`);
     console.log(`📱 Totem: ${tablet_id} - ${tablet_name}`);
+
+    // 🔒 CRIPTOGRAFAR IMAGEM BIOMÉTRICA IMEDIATAMENTE
+    try {
+      const biometricKey = getDerivedKey('face-recognition', `temp-${Date.now()}`);
+      const encryptedImagePath = encryptFaceImage(imagePath, biometricKey);
+      
+      logKeyOperation('face-image-encrypted', {
+        original_path: imagePath,
+        encrypted_path: encryptedImagePath,
+        purpose: 'face-recognition'
+      });
+      
+      console.log('🔒 SEGURANÇA: Imagem facial criptografada automaticamente');
+      
+      // Atualizar caminho para usar imagem criptografada
+      req.file.path = encryptedImagePath;
+      
+    } catch (encryptError) {
+      console.error('❌ SEGURANÇA CRÍTICA: Falha na criptografia da imagem:', encryptError);
+      
+      // Limpar arquivo não criptografado por segurança
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Falha na segurança biométrica',
+        message: 'Erro interno de criptografia'
+      });
+    }
 
     // Carregar pessoas cadastradas
     const registeredPersons = loadPersons();

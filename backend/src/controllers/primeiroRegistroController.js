@@ -4,6 +4,20 @@ const path = require('path');
 const multer = require('multer');
 const { logCPF } = require('../utils/safeConsole');
 
+// Importar utilitários de segurança biométrica
+const {
+  encryptFaceImage,
+  generateBiometricHash,
+  secureBiometricDirectory,
+  logBiometricOperation
+} = require('../utils/biometricSecurity');
+
+// Importar gerenciador de chaves biométricas
+const {
+  getDerivedKey,
+  logKeyOperation
+} = require('../utils/biometricKeyManager');
+
 // Configuração do multer para upload de faces do primeiro registro
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -11,12 +25,15 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
+    // Aplicar permissões seguras no diretório
+    secureBiometricDirectory(uploadPath);
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     const timestamp = Date.now();
     const cpf = req.body.cpf || 'unknown';
-    cb(null, `primeiro_registro_${cpf}_${timestamp}.jpg`);
+    const secureHash = generateBiometricHash(`${cpf}_${timestamp}`);
+    cb(null, `primeiro_registro_${secureHash.substring(0, 12)}.jpg`);
   }
 });
 
@@ -195,12 +212,43 @@ const cadastrarFaceEPonto = async (req, res) => {
     }
     
     try {
+      // 🔒 CRIPTOGRAFAR IMAGEM BIOMÉTRICA ANTES DE ARMAZENAR
+      let encryptedImagePath;
+      try {
+        const biometricKey = getDerivedKey('first-registration', colaborador.id.toString());
+        encryptedImagePath = encryptFaceImage(req.file.path, biometricKey);
+        
+        logKeyOperation('first-registration-encrypted', {
+          colaborador_id: colaborador.id,
+          cpf: cpf_confirmado,
+          original_path: req.file.path,
+          encrypted_path: encryptedImagePath
+        });
+        
+        console.log('🔒 SEGURANÇA: Imagem de primeiro registro criptografada');
+        
+      } catch (encryptError) {
+        console.error('❌ SEGURANÇA CRÍTICA: Falha na criptografia do primeiro registro:', encryptError);
+        
+        // Limpar arquivo não criptografado por segurança
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+        
+        return res.status(500).json({
+          success: false,
+          message: 'Falha na segurança biométrica durante cadastro'
+        });
+      }
+
       // 1. Cadastrar face no sistema de reconhecimento
       const faceData = {
         id: colaborador.id,
         name: colaborador.nome,
         colaborador_id: colaborador.id,
-        image_path: req.file.path,
+        image_path: encryptedImagePath, // Usar caminho criptografado
+        encrypted: true, // Marcar como criptografado
+        encryption_key_id: `first-registration:${colaborador.id}`, // ID da chave usada
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         first_registration: true

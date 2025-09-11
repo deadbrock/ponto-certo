@@ -21,7 +21,9 @@
     "validate:flows": "node tests/flow-validation/runFlowValidation.js",
     "validate:flows:local": "node tests/flow-validation/runFlowValidation.js http://localhost:3333",
     "validate:flows:prod": "node tests/flow-validation/runFlowValidation.js https://ponto-certo-production.up.railway.app",
-    "validate:first-register": "node -e \"const {FirstRegisterValidator} = require('./tests/flow-validation/first-register/FirstRegisterValidator'); new FirstRegisterValidator(process.argv[1] || 'http://localhost:3333').validateCompleteFlow().then(console.log);\""
+    "validate:first-register": "node -e \"const {FirstRegisterValidator} = require('./tests/flow-validation/first-register/FirstRegisterValidator'); new FirstRegisterValidator(process.argv[1] || 'http://localhost:3333').validateCompleteFlow().then(console.log);\"",
+    "validate:face-recognition": "node -e \"const {FaceRecognitionValidator} = require('./tests/flow-validation/face-recognition/FaceRecognitionValidator'); new FaceRecognitionValidator(process.argv[1] || 'http://localhost:3333').validateCompleteFlow().then(console.log);\"",
+    "validate:face-recognition:prod": "node -e \"const {FaceRecognitionValidator} = require('./tests/flow-validation/face-recognition/FaceRecognitionValidator'); new FaceRecognitionValidator('https://ponto-certo-production.up.railway.app').validateCompleteFlow().then(console.log);\""
   },
   "keywords": [],
   "author": "",

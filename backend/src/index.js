@@ -5,8 +5,17 @@ const helmet = require('helmet');
 const db = require('./config/database');
 const { criarTabelasEssenciais } = require('./database/schema');
 
-// Importar middlewares de segurança
-const { apiLimiter } = require('./api/middlewares/rateLimitMiddleware');
+// Importar middlewares de rate limiting avançado
+const { 
+  checkIPStatus,
+  apiLimiter, 
+  loginLimiter, 
+  faceRecognitionLimiter,
+  sensitiveEndpointsLimiter,
+  uploadLimiter,
+  reportsLimiter,
+  getStats
+} = require('./api/middlewares/rateLimitMiddleware');
 const { 
   helmetConfig, 
   detectAttacks, 
@@ -173,10 +182,15 @@ if (process.env.NODE_ENV === 'production') {
   // Middlewares HTTPS removidos - Railway já fornece HTTPS automaticamente
 }
 
-// 4. Rate limiting global
+// 4. Verificação de IP (whitelist/blacklist + burst protection)
+console.log('🛡️ Ativando proteção contra burst attacks e IP blocking...');
+app.use(checkIPStatus);
+
+// 5. Rate limiting global (aplicado após verificação de IP)
+console.log('⚡ Ativando rate limiting global...');
 app.use(apiLimiter);
 
-// 5. Detectar ataques comuns - REATIVADO
+// 6. Detectar ataques comuns - REATIVADO
 app.use(detectAttacks);
 
 // 6. Sistema de auditoria completo - NOVO
@@ -260,6 +274,26 @@ app.get('/api/test-cors', (req, res) => {
     });
 });
 
+// Endpoint para monitoramento de rate limiting (apenas admin)
+app.get('/api/admin/rate-limit-stats', requireAdmin, (req, res) => {
+  try {
+    const stats = getStats();
+    res.json({
+      success: true,
+      data: {
+        ...stats,
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao obter estatísticas de rate limiting:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
+
 // Middleware para logging de requests (deve vir ANTES das rotas)
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -275,18 +309,27 @@ app.use((req, res, next) => {
 
 // ❌ REMOVIDO: CORS antigo inseguro substituído por configuração restritiva
 
-// Registrar rotas
-app.use('/api/auth', authRoutes);
+// Registrar rotas com rate limiting específico
+console.log('🔗 Registrando rotas com rate limiting específico...');
+
+// Rotas críticas com limiters específicos
+app.use('/api/auth', loginLimiter, authRoutes); // Login mais restritivo
+app.use('/api/face', faceRecognitionLimiter, faceRoutes); // Reconhecimento facial restritivo
+
+// Rotas sensíveis 
+app.use('/api/usuarios', sensitiveEndpointsLimiter, usuarioRoutes);
+app.use('/api/colaboradores', sensitiveEndpointsLimiter, colaboradorRoutes);
+app.use('/api/auditoria', sensitiveEndpointsLimiter, auditoriaRoutes);
+app.use('/api/configuracoes', sensitiveEndpointsLimiter, configuracaoRoutes);
+
+// Rotas de relatórios
+app.use('/api/relatorios', reportsLimiter, relatoriosRoutes);
+
+// Rotas normais (com rate limiting global apenas)
 app.use('/api/ponto', pontoRoutes);
-app.use('/api/face', faceRoutes);
-app.use('/api/relatorios', relatoriosRoutes);
-app.use('/api/auditoria', auditoriaRoutes);
-app.use('/api/usuarios', usuarioRoutes);
-app.use('/api/colaboradores', colaboradorRoutes);
 app.use('/api/atestados', atestadoRoutes);
 app.use('/api/escalas', escalaRoutes);
 app.use('/api/feriados', feriadoRoutes);
-app.use('/api/configuracoes', configuracaoRoutes);
 app.use('/api/frequencia', frequenciaRoutes);
 app.use('/api/mapa', mapaRoutes);
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const primeiroRegistroController = require('../../controllers/primeiroRegistroController');
+const { logCPF } = require('../../utils/safeConsole');
 
 /**
  * Rotas para Primeiro Registro de Colaboradores
@@ -16,7 +17,7 @@ router.post('/consultar-cpf', async (req, res) => {
   try {
     const { cpf } = req.body;
     
-    console.log('🔍 Consultando CPF:', cpf);
+    logCPF('🔍 Consultando CPF:', cpf);
     
     if (!cpf) {
       return res.status(400).json({
@@ -38,7 +39,7 @@ router.post('/consultar-cpf', async (req, res) => {
     const result = await db.query(query, [cpf]);
     
     if (result.rows.length === 0) {
-      console.log('❌ CPF não encontrado:', cpf);
+      logCPF('❌ CPF não encontrado:', cpf);
       return res.status(404).json({
         success: false,
         message: 'CPF não encontrado no sistema. Verifique com o RH.'
@@ -66,7 +67,7 @@ router.post('/consultar-cpf', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Erro ao consultar CPF:', error);
+    console.error('❌ Erro ao consultar CPF:', error.message); // Error não contém CPF
     return res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',

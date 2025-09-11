@@ -2,6 +2,7 @@ const db = require('../config/database');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const { logCPF } = require('../utils/safeConsole');
 
 // Configuração do multer para upload de faces do primeiro registro
 const storage = multer.diskStorage({
@@ -39,7 +40,7 @@ const consultarColaboradorPorCpf = async (req, res) => {
   try {
     const { cpf } = req.body;
     
-    console.log(`🔍 Consultando colaborador por CPF: ${cpf}`);
+    logCPF('🔍 Consultando colaborador por CPF:', cpf);
     
     // Validar CPF
     if (!cpf || cpf.length !== 11 || !/^\d{11}$/.test(cpf)) {
@@ -61,7 +62,7 @@ const consultarColaboradorPorCpf = async (req, res) => {
     const result = await db.query(query, [cpf]);
     
     if (result.rows.length === 0) {
-      console.log(`❌ CPF não encontrado: ${cpf}`);
+      logCPF('❌ CPF não encontrado:', cpf);
       return res.status(404).json({
         success: false,
         message: 'CPF não encontrado no sistema. Verifique com o RH.'
@@ -99,7 +100,7 @@ const consultarColaboradorPorCpf = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Erro ao consultar CPF:', error);
+    console.error('Erro ao consultar CPF:', error.message); // Error não contém CPF
     return res.status(500).json({
       success: false,
       message: 'Erro interno do servidor',
@@ -124,7 +125,7 @@ const cadastrarFaceEPonto = async (req, res) => {
       tablet_id 
     } = req.body;
     
-    console.log(`📸 Cadastrando face para primeiro registro: ${nome_confirmado} (CPF: ${cpf_confirmado})`);
+    logCPF(`📸 Cadastrando face para primeiro registro: ${nome_confirmado} (CPF:`, cpf_confirmado, ')');
     
     // Verificar se arquivo foi enviado
     if (!req.file) {

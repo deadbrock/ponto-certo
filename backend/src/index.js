@@ -5,6 +5,10 @@ const helmet = require('helmet');
 const db = require('./config/database');
 const { criarTabelasEssenciais } = require('./database/schema');
 
+// Ativar console seguro GLOBALMENTE (LGPD)
+const { enableSafeConsole } = require('./utils/safeConsole');
+enableSafeConsole();
+
 // Importar middlewares de rate limiting avançado
 const { 
   checkIPStatus,

@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const { mask, maskCPF, containsSensitiveData } = require('./dataMasking');
 
 /**
- * Sistema de Logging Seguro - OWASP Compliant
- * Remove informações sensíveis e estrutura logs para análise
+ * Sistema de Logging Seguro - OWASP Compliant + LGPD
+ * Remove informações sensíveis e mascara dados pessoais
  */
 
 class SecureLogger {
@@ -25,14 +26,20 @@ class SecureLogger {
     }
   }
 
-  // Sanitizar dados removendo informações sensíveis
+  // Sanitizar e mascarar dados sensíveis (LGPD compliant)
   sanitizeData(data) {
     if (typeof data !== 'object' || data === null) {
+      // Se for string, aplicar mascaramento
+      if (typeof data === 'string') {
+        return mask(data);
+      }
       return data;
     }
 
-    const sanitized = { ...data };
+    // Aplicar mascaramento completo do objeto
+    const sanitized = mask(data);
     
+    // Sanitização adicional para campos críticos
     for (const field of this.sensitiveFields) {
       if (sanitized[field]) {
         sanitized[field] = '[REDACTED]';
@@ -44,7 +51,7 @@ class SecureLogger {
       sanitized.headers.authorization = 'Bearer [REDACTED]';
     }
 
-    // Sanitizar body de requisições
+    // Sanitizar body de requisições recursivamente
     if (sanitized.body) {
       sanitized.body = this.sanitizeData(sanitized.body);
     }

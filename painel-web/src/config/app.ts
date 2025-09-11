@@ -3,8 +3,8 @@ export const appConfig = {
   // Modo de desenvolvimento - configurar para false em produção
   MOCK_DATA_ENABLED: false, // ✅ DESABILITADO - usando dados reais
   
-  // URLs do backend - HTTPS OBRIGATÓRIO
-  BACKEND_URL: 'https://ponto-certo-production.up.railway.app/api', // URL FIXA CORRETA
+  // URLs do backend - HTTPS OBRIGATÓRIO  
+  BACKEND_URL: 'https://ponto-certo-production.up.railway.app/api', // URL CORRETA - REBUILD FORÇADO 2024-09-10
   
   // Configurações de autenticação
   AUTH_TOKEN_KEY: 'token',

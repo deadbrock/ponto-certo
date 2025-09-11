@@ -30,12 +30,7 @@ const corsOptions = {
   maxAge: 86400
 };
 
-// Importar middlewares HTTPS OBRIGATÓRIO
-const { 
-  enforceHTTPS, 
-  strictCSP, 
-  validateSSL 
-} = require('./api/middlewares/httpsMiddleware');
+// HTTPS middlewares removidos - não necessários no Railway (proxy reverso)
 
 // Importar novos middlewares de segurança
 const secureLogger = require('./utils/secureLogger');
@@ -129,12 +124,10 @@ app.use(cors(corsOptions));
 // 2. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
 
-// 3. HTTPS OBRIGATÓRIO em produção - POLÍTICAS RIGOROSAS
+// 3. HTTPS é gerenciado pelo Railway (proxy reverso)
 if (process.env.NODE_ENV === 'production') {
-  console.log('🔒 Ativando HTTPS OBRIGATÓRIO...');
-  app.use(validateSSL);     // Validar certificado SSL
-  app.use(enforceHTTPS);    // Forçar HTTPS com redirecionamento
-  app.use(strictCSP);       // Content Security Policy rigorosa
+  console.log('🔒 HTTPS gerenciado pelo Railway...');
+  // Middlewares HTTPS removidos - Railway já fornece HTTPS automaticamente
 }
 
 // 4. Rate limiting global

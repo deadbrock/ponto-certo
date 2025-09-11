@@ -10,9 +10,14 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Lista de origens permitidas (produção)
     const allowedOrigins = [
-      'https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app',
-      'https://ponto-digital-painel-8hf7kmuxj-douglas-projects-c2be5a2b.vercel.app', // Nova URL
+      'https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app', // URL ATUAL
+      'https://ponto-digital-painel-8hf7kmuxj-douglas-projects-c2be5a2b.vercel.app', // URL anterior
+      'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app', // URL histórica
+      'https://ponto-digital-painel-moiu8yana-douglas-projects-c2be5a2b.vercel.app', // URL histórica
+      'https://ponto-digital-painel-56a498y1c-douglas-projects-c2be5a2b.vercel.app', // URL histórica
+      'https://ponto-digital-painel-dgjzsh4hp-douglas-projects-c2be5a2b.vercel.app', // URL histórica
       'https://pontodigitalclean-production.up.railway.app',
+      'https://ponto-certo-production.up.railway.app', // URL atual Railway
       'http://localhost:3000', // Desenvolvimento
       'http://localhost:3333'  // Desenvolvimento backend
     ];

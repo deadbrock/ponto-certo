@@ -9,6 +9,11 @@ const { criarTabelasEssenciais } = require('./database/schema');
 const { enableSafeConsole } = require('./utils/safeConsole');
 enableSafeConsole();
 
+// Inicializar sistema de auditoria
+const auditLogger = require('./utils/auditLogger');
+const logRotationManager = require('./utils/logRotation');
+console.log('📋 Sistema de auditoria inicializado');
+
 // Importar middlewares de rate limiting avançado
 const { 
   checkIPStatus,
@@ -72,7 +77,7 @@ const corsOptions = {
 
 // Importar novos middlewares de segurança
 const secureLogger = require('./utils/secureLogger');
-const { auditMiddleware, auditAccessDenied } = require('./api/middlewares/auditMiddleware');
+const { auditMiddleware, auditAccessDenied, auditFileUpload } = require('./api/middlewares/auditMiddleware');
 const { requireAdmin, requireAdminOrRH } = require('./api/middlewares/roleMiddleware');
 
 const authRoutes = require('./api/routes/authRoutes');
@@ -197,9 +202,10 @@ app.use(apiLimiter);
 // 6. Detectar ataques comuns - REATIVADO
 app.use(detectAttacks);
 
-// 6. Sistema de auditoria completo - NOVO
+// 6. Sistema de auditoria completo - ATUALIZADO
 app.use(auditMiddleware);
 app.use(auditAccessDenied);
+app.use(auditFileUpload);
 
 // 7. Sanitização de entrada - REATIVADO
 app.use(sanitizeInput);

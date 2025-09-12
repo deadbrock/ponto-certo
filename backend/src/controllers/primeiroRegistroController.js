@@ -4,6 +4,46 @@ const path = require('path');
 const multer = require('multer');
 const { logCPF } = require('../utils/safeConsole');
 
+/**
+ * Validar CPF com dígitos verificadores
+ */
+function isValidCPF(cpf) {
+  if (!cpf) return false;
+  
+  // Remover formatação
+  const cleanCPF = cpf.replace(/[^\d]/g, '');
+  
+  // Verificar se tem 11 dígitos
+  if (cleanCPF.length !== 11) {
+    return false;
+  }
+  
+  // Verificar se todos os dígitos são iguais
+  if (/^(\d)\1{10}$/.test(cleanCPF)) {
+    return false;
+  }
+  
+  // Validar primeiro dígito verificador
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
+  }
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cleanCPF.charAt(9))) return false;
+  
+  // Validar segundo dígito verificador
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cleanCPF.charAt(10))) return false;
+  
+  return true;
+}
+
 // Importar utilitários de segurança biométrica
 const {
   encryptFaceImage,
@@ -60,10 +100,18 @@ const consultarColaboradorPorCpf = async (req, res) => {
     logCPF('🔍 Consultando colaborador por CPF:', cpf);
     
     // Validar CPF
-    if (!cpf || cpf.length !== 11 || !/^\d{11}$/.test(cpf)) {
+    if (!cpf) {
       return res.status(400).json({
         success: false,
-        message: 'CPF inválido. Deve conter 11 dígitos numéricos.'
+        message: 'CPF é obrigatório'
+      });
+    }
+    
+    // Validar formato e dígitos verificadores do CPF
+    if (!isValidCPF(cpf)) {
+      return res.status(400).json({
+        success: false,
+        message: 'CPF inválido. Verifique os dígitos.'
       });
     }
     
@@ -152,11 +200,71 @@ const cadastrarFaceEPonto = async (req, res) => {
       });
     }
     
+    // Validar tipo e tamanho do arquivo
+    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    
+    if (!allowedMimes.includes(req.file.mimetype)) {
+      // Limpar arquivo inválido
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de imagem inválido. Use JPEG ou PNG.'
+      });
+    }
+    
+    if (req.file.size > maxSize) {
+      // Limpar arquivo muito grande
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Imagem muito grande. Máximo 5MB.'
+      });
+    }
+    
     // Validar dados obrigatórios
     if (!colaborador_id || !cpf_confirmado || !nome_confirmado || !data_nascimento_confirmada) {
+      // Limpar arquivo se dados inválidos
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
       return res.status(400).json({
         success: false,
         message: 'Todos os campos são obrigatórios'
+      });
+    }
+    
+    // Validar CPF confirmado
+    if (!isValidCPF(cpf_confirmado)) {
+      // Limpar arquivo se CPF inválido
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'CPF confirmado é inválido'
+      });
+    }
+    
+    // Validar formato da data
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(data_nascimento_confirmada)) {
+      // Limpar arquivo se data inválida
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Data de nascimento deve estar no formato YYYY-MM-DD'
       });
     }
     

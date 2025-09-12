@@ -655,10 +655,33 @@ const obterHistoricoTabletPublic = async (req, res) => {
 };
 
 const gerarRelatorio = async (req, res) => {
+    const startTime = Date.now();
+    
     try {
         const { data_inicio, data_fim, colaborador_id, tablet_id } = req.query;
-
+        
         console.log(`[${new Date()}] Gerando relatório de pontos`);
+        
+        // Validar parâmetros do relatório
+        const reportsValidator = require('../utils/reportsValidator');
+        const validation = await reportsValidator.validateReportParams({
+            data_inicio,
+            data_fim,
+            colaborador_id,
+            tablet_id
+        }, 'general');
+        
+        if (!validation.valid) {
+            return res.status(400).json({
+                success: false,
+                message: 'Parâmetros do relatório inválidos',
+                errors: validation.errors,
+                warnings: validation.warnings
+            });
+        }
+        
+        // Usar parâmetros normalizados
+        const params = validation.normalizedParams;
 
         let query = `
             SELECT 
@@ -678,14 +701,14 @@ const gerarRelatorio = async (req, res) => {
         `;
         const queryParams = [];
 
-        if (data_inicio) {
+        if (params.data_inicio) {
             query += ` AND rp.data_hora >= $${queryParams.length + 1}`;
-            queryParams.push(data_inicio);
+            queryParams.push(params.data_inicio);
         }
 
-        if (data_fim) {
+        if (params.data_fim) {
             query += ` AND rp.data_hora <= $${queryParams.length + 1}`;
-            queryParams.push(data_fim);
+            queryParams.push(params.data_fim + ' 23:59:59');
         }
 
         if (colaborador_id) {
@@ -701,23 +724,46 @@ const gerarRelatorio = async (req, res) => {
         query += ` ORDER BY rp.data_hora DESC`;
 
         const result = await db.query(query, queryParams);
-
+        
+        // Validar integridade do relatório gerado
+        const integrityValidation = await reportsValidator.validateReportIntegrity(
+            result.rows,
+            params,
+            'general'
+        );
+        
         // Gerar estatísticas do relatório
         const stats = {
             total_registros: result.rows.length,
             colaboradores_unicos: [...new Set(result.rows.map(r => r.colaborador_nome))].length,
             tablets_utilizados: [...new Set(result.rows.map(r => r.tablet_id).filter(Boolean))].length,
             periodo: {
-                inicio: data_inicio || 'Não especificado',
-                fim: data_fim || 'Não especificado'
+                inicio: params.data_inicio || 'Não especificado',
+                fim: params.data_fim || 'Não especificado'
+            },
+            validacao: {
+                status: integrityValidation.valid ? 'VÁLIDO' : 'COM_PROBLEMAS',
+                avisos: integrityValidation.warnings.length,
+                duplicados: integrityValidation.integrity?.duplicates || 0
             }
         };
+        
+        const executionTime = Date.now() - startTime;
+        
+        // Gerar relatório de validação
+        const validationReport = reportsValidator.generateValidationReport(
+            { ...validation, ...integrityValidation },
+            'general',
+            executionTime
+        );
 
         return res.status(200).json({
             success: true,
             relatorio: result.rows,
             estatisticas: stats,
-            gerado_em: new Date().toISOString()
+            validacao: validationReport,
+            gerado_em: new Date().toISOString(),
+            tempo_execucao: executionTime
         });
 
     } catch (error) {
@@ -740,7 +786,7 @@ const gerarRelatorioAFD = async (req, res) => {
             });
         }
 
-        console.log(`[${new Date()}] Gerando relatório AFD de ${data_inicio} até ${data_fim}`);
+        console.log(`[${new Date()}] Gerando relatório AFD de ${params.data_inicio} até ${params.data_fim}`);
 
         // Query para buscar registros no formato AFD (Portaria 671/2021)
         const query = `
@@ -774,8 +820,15 @@ const gerarRelatorioAFD = async (req, res) => {
             };
         });
 
+        // Validar integridade dos dados AFD
+        const integrityValidation = await reportsValidator.validateReportIntegrity(
+            result.rows,
+            params,
+            'afd'
+        );
+        
         // Gerar conteúdo do arquivo AFD
-        let conteudoAFD = `000000000AFD${data_inicio.replace(/-/g, '')}${data_fim.replace(/-/g, '')}\n`;
+        let conteudoAFD = `000000000AFD${params.data_inicio.replace(/-/g, '')}${params.data_fim.replace(/-/g, '')}\n`;
         
         registrosAFD.forEach(reg => {
             conteudoAFD += `${reg.pis.padStart(11, '0')}${reg.data}${reg.hora}${reg.tipo}\n`;

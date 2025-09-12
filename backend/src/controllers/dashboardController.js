@@ -1,4 +1,6 @@
 const db = require('../config/database');
+const performanceOptimizer = require('../utils/performanceOptimizer');
+const cacheManager = require('../utils/cacheManager');
 
 /**
  * Controller para endpoints do Dashboard

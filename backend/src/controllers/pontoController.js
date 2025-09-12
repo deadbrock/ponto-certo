@@ -664,6 +664,8 @@ const gerarRelatorio = async (req, res) => {
         
         // Validar parâmetros do relatório
         const reportsValidator = require('../utils/reportsValidator');
+        const performanceOptimizer = require('../utils/performanceOptimizer');
+        
         const validation = await reportsValidator.validateReportParams({
             data_inicio,
             data_fim,
@@ -682,48 +684,11 @@ const gerarRelatorio = async (req, res) => {
         
         // Usar parâmetros normalizados
         const params = validation.normalizedParams;
+        
+        // Usar query otimizada
+        const result = await performanceOptimizer.optimizeReportQueries(db, params);
 
-        let query = `
-            SELECT 
-                rp.id,
-                rp.data_hora,
-                rp.latitude,
-                rp.longitude,
-                rp.tablet_id,
-                rp.tablet_name,
-                rp.tablet_location,
-                c.nome as colaborador_nome,
-                c.cpf as colaborador_cpf,
-                c.perfil as colaborador_perfil
-            FROM registros_ponto rp
-            JOIN colaboradores c ON rp.colaborador_id = c.id
-            WHERE 1=1
-        `;
-        const queryParams = [];
-
-        if (params.data_inicio) {
-            query += ` AND rp.data_hora >= $${queryParams.length + 1}`;
-            queryParams.push(params.data_inicio);
-        }
-
-        if (params.data_fim) {
-            query += ` AND rp.data_hora <= $${queryParams.length + 1}`;
-            queryParams.push(params.data_fim + ' 23:59:59');
-        }
-
-        if (colaborador_id) {
-            query += ` AND rp.colaborador_id = $${queryParams.length + 1}`;
-            queryParams.push(colaborador_id);
-        }
-
-        if (tablet_id) {
-            query += ` AND rp.tablet_id = $${queryParams.length + 1}`;
-            queryParams.push(tablet_id);
-        }
-
-        query += ` ORDER BY rp.data_hora DESC`;
-
-        const result = await db.query(query, queryParams);
+        // Query otimizada já executada acima
         
         // Validar integridade do relatório gerado
         const integrityValidation = await reportsValidator.validateReportIntegrity(

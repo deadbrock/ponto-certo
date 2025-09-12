@@ -81,6 +81,7 @@ const { auditMiddleware, auditAccessDenied, auditFileUpload } = require('./api/m
 const { requireAdmin, requireAdminOrRH } = require('./api/middlewares/roleMiddleware');
 
 const authRoutes = require('./api/routes/authRoutes');
+const sessionRoutes = require('./api/routes/sessionRoutes');
 const pontoRoutes = require('./api/routes/pontoRoutes');
 const faceRoutes = require('./api/routes/faceRoutes');
 const relatoriosRoutes = require('./api/routes/relatoriosRoutes');
@@ -324,6 +325,7 @@ console.log('🔗 Registrando rotas com rate limiting específico...');
 
 // Rotas críticas com limiters específicos
 app.use('/api/auth', loginLimiter, authRoutes); // Login mais restritivo
+app.use('/api/session', apiLimiter, sessionRoutes); // Controle de sessões
 app.use('/api/face', faceRecognitionLimiter, faceRoutes); // Reconhecimento facial restritivo
 
 // Rotas sensíveis 

@@ -99,15 +99,13 @@ const loginAdmin = async (req, res) => {
             });
         }
 
-        // Gerar token JWT
-        const token = jwt.sign(
-            { 
-                id: usuario.id, 
-                email: usuario.email, 
-                perfil: usuario.perfil 
-            },
-            process.env.JWT_SECRET || 'ponto-digital-jwt-secret-key-2024',
-            { expiresIn: '8h' }
+        // Criar sessão usando SessionManager
+        const sessionManager = require('../utils/sessionManager');
+        const sessionData = await sessionManager.createSession(
+            usuario.id,
+            usuario.email,
+            usuario.perfil,
+            req
         );
 
         // Retornar dados do usuário (sem a senha)
@@ -123,8 +121,13 @@ const loginAdmin = async (req, res) => {
 
         return res.status(200).json({ 
             success: true,
-            token: token,
+            token: sessionData.token,
             usuario: usuarioSemSenha,
+            session: {
+                id: sessionData.sessionId,
+                expiresAt: sessionData.expiresAt,
+                timeout: sessionData.timeout
+            },
             message: 'Login realizado com sucesso'
         });
 

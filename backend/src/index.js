@@ -12,7 +12,9 @@ enableSafeConsole();
 // Inicializar sistema de auditoria
 const auditLogger = require('./utils/auditLogger');
 const logRotationManager = require('./utils/logRotation');
+const securityMonitor = require('./utils/securityMonitor');
 console.log('📋 Sistema de auditoria inicializado');
+console.log('🛡️ Monitor de segurança inicializado');
 
 // Importar middlewares de rate limiting avançado
 const { 
@@ -184,7 +186,10 @@ app.use((req, res, next) => {
 
 app.use(cors(corsOptions));
 
-// 2. Headers de segurança (Helmet) - REATIVADO
+// 2. Monitor de segurança em tempo real
+app.use(securityMonitor.middleware());
+
+// 3. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
 
 // 3. HTTPS é gerenciado pelo Railway (proxy reverso)
@@ -346,6 +351,7 @@ app.use('/api/escalas', escalaRoutes);
 app.use('/api/feriados', feriadoRoutes);
 app.use('/api/frequencia', frequenciaRoutes);
 app.use('/api/mapa', mapaRoutes);
+app.use('/api/security', sensitiveEndpointsLimiter, require('./api/routes/securityRoutes'));
 
 // Novas rotas para integração 100% com painel web
 app.use('/api/dashboard', dashboardRoutes);

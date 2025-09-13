@@ -35,12 +35,13 @@ const PERFIS = {
 };
 
 /**
- * Middleware para verificar se usuário tem perfil adequado
+ * Middleware para verificar se usuário tem perfil adequado (VERSÃO HÍBRIDA)
+ * Suporta tanto o sistema legado quanto o novo sistema RBAC
  * @param {Array} perfisPermitidos - Lista de perfis que podem acessar
  * @returns {Function} Middleware function
  */
 const requireRole = (perfisPermitidos) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     try {
       const usuario = req.user;
       
@@ -61,6 +62,30 @@ const requireRole = (perfisPermitidos) => {
       const perfilUsuario = usuario.perfil?.toUpperCase();
       const perfisPermitidosUpper = perfisPermitidos.map(p => p.toUpperCase());
 
+      // NOVO SISTEMA RBAC - Verificar se usuário tem roles apropriados
+      try {
+        const userRoles = await rbacManager.getUserRoles(usuario.id);
+        const userRoleNames = userRoles.filter(r => r.is_active).map(r => r.name);
+        
+        // Verificar se tem algum dos roles permitidos
+        const hasRequiredRole = perfisPermitidosUpper.some(requiredRole => 
+          userRoleNames.includes(requiredRole)
+        );
+        
+        if (hasRequiredRole) {
+          secureLogger.audit('ACCESS_GRANTED_RBAC', usuario.id, {
+            url: req.url,
+            method: req.method,
+            userRoles: userRoleNames,
+            requiredRoles: perfisPermitidosUpper
+          });
+          return next();
+        }
+      } catch (rbacError) {
+        console.warn('⚠️ Erro no sistema RBAC, usando sistema legado:', rbacError.message);
+      }
+
+      // SISTEMA LEGADO - Fallback para compatibilidade
       if (!perfisPermitidosUpper.includes(perfilUsuario)) {
         secureLogger.security('warning', 'Tentativa de acesso negado - perfil insuficiente', {
           userId: usuario.id,
@@ -80,8 +105,8 @@ const requireRole = (perfisPermitidos) => {
         });
       }
 
-      // Log de acesso autorizado
-      secureLogger.audit('ACCESS_GRANTED', usuario.id, {
+      // Log de acesso autorizado (sistema legado)
+      secureLogger.audit('ACCESS_GRANTED_LEGACY', usuario.id, {
         url: req.url,
         method: req.method,
         userProfile: perfilUsuario
@@ -105,22 +130,46 @@ const requireRole = (perfisPermitidos) => {
 };
 
 /**
- * Middleware para verificar permissão específica
+ * Middleware para verificar permissão específica (VERSÃO RBAC AVANÇADA)
  * @param {string} permissao - Permissão no formato 'recurso:acao'
+ * @param {Object} options - Opções adicionais
  * @returns {Function} Middleware function
  */
-const requirePermission = (permissao) => {
-  return (req, res, next) => {
+const requirePermission = (permissao, options = {}) => {
+  return async (req, res, next) => {
     try {
       const usuario = req.user;
       
       if (!usuario) {
         return res.status(401).json({
           success: false,
-          error: 'Usuário não autenticado'
+          error: 'Usuário não autenticado',
+          code: 'AUTHENTICATION_REQUIRED'
         });
       }
 
+      // NOVO SISTEMA RBAC - Verificação avançada de permissões
+      try {
+        const context = {
+          userId: usuario.id,
+          ownerId: req.params.userId || req.body.userId || req.query.userId,
+          method: req.method,
+          path: req.path,
+          ...options.context
+        };
+
+        const hasPermission = await rbacManager.hasPermission(usuario.id, permissao, context);
+        
+        if (hasPermission) {
+          return next();
+        }
+
+        // Se não tem permissão no novo sistema, tentar sistema legado
+      } catch (rbacError) {
+        console.warn('⚠️ Erro no sistema RBAC, usando sistema legado:', rbacError.message);
+      }
+
+      // SISTEMA LEGADO - Fallback
       const perfilUsuario = usuario.perfil?.toUpperCase();
       const configPerfil = PERFIS[perfilUsuario];
 
@@ -132,7 +181,8 @@ const requirePermission = (permissao) => {
 
         return res.status(403).json({
           success: false,
-          error: 'Perfil de usuário inválido'
+          error: 'Perfil de usuário inválido',
+          code: 'INVALID_PROFILE'
         });
       }
 
@@ -159,6 +209,7 @@ const requirePermission = (permissao) => {
         return res.status(403).json({
           success: false,
           error: 'Permissão insuficiente para esta ação',
+          code: 'INSUFFICIENT_PERMISSION',
           requiredPermission: permissao
         });
       }
@@ -172,7 +223,8 @@ const requirePermission = (permissao) => {
 
       return res.status(500).json({
         success: false,
-        error: 'Erro na verificação de permissões'
+        error: 'Erro na verificação de permissões',
+        code: 'PERMISSION_CHECK_ERROR'
       });
     }
   };
@@ -242,7 +294,49 @@ const requireLevel = (nivelMinimo) => {
 };
 
 // Middlewares pré-configurados para facilitar uso
-const requireAdmin = requireRole(['ADMINISTRADOR']);
+const requireAdmin = requireRole(['ADMINISTRADOR', 'SUPER_ADMIN']);
+const requireRH = requireRole(['RH', 'ADMINISTRADOR', 'SUPER_ADMIN']);
+const requireGestor = requireRole(['GESTOR', 'RH', 'ADMINISTRADOR', 'SUPER_ADMIN']);
+
+// Middlewares RBAC avançados
+const requireRBACPermission = rbacManager.requirePermission.bind(rbacManager);
+const requireAnyRBACPermission = rbacManager.requireAnyPermission.bind(rbacManager);
+
+/**
+ * Migrar usuário para o sistema RBAC
+ */
+async function migrateUserToRBAC(userId, legacyProfile) {
+  try {
+    const roleName = LEGACY_PROFILE_MAPPING[legacyProfile?.toUpperCase()];
+    if (roleName) {
+      await rbacManager.assignRoleToUser(userId, roleName, 'system');
+      console.log(`✅ Usuário ${userId} migrado para role ${roleName}`);
+    }
+  } catch (error) {
+    console.error(`❌ Erro ao migrar usuário ${userId}:`, error);
+  }
+}
+
+/**
+ * Middleware de migração automática
+ */
+const autoMigrateMiddleware = async (req, res, next) => {
+  try {
+    const usuario = req.user;
+    if (usuario?.id && usuario?.perfil) {
+      // Verificar se usuário já tem roles no sistema RBAC
+      const userRoles = await rbacManager.getUserRoles(usuario.id);
+      
+      if (userRoles.length === 0) {
+        // Migrar automaticamente
+        await migrateUserToRBAC(usuario.id, usuario.perfil);
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Erro na migração automática:', error);
+  }
+  next();
+};
 const requireAdminOrRH = requireRole(['ADMINISTRADOR', 'RH']);
 const requireManagement = requireRole(['ADMINISTRADOR', 'RH', 'GESTOR']);
 const requireHighLevel = requireLevel(80); // RH ou superior

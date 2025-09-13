@@ -15,10 +15,12 @@ const logRotationManager = require('./utils/logRotation');
 const securityMonitor = require('./utils/securityMonitor');
 const performanceMonitor = require('./utils/performanceMonitor');
 const cacheManager = require('./utils/cacheManager');
+const rbacManager = require('./utils/rbacManager');
 console.log('📋 Sistema de auditoria inicializado');
 console.log('🛡️ Monitor de segurança inicializado');
 console.log('📊 Monitor de performance inicializado');
 console.log('🧠 Cache manager inicializado');
+console.log('🛡️ RBAC Manager inicializado');
 
 // Importar middlewares de rate limiting avançado
 const { 
@@ -360,6 +362,7 @@ app.use('/api/frequencia', frequenciaRoutes);
 app.use('/api/mapa', mapaRoutes);
 app.use('/api/security', sensitiveEndpointsLimiter, require('./api/routes/securityRoutes'));
 app.use('/api/performance', sensitiveEndpointsLimiter, require('./api/routes/performanceRoutes'));
+app.use('/api/rbac', sensitiveEndpointsLimiter, require('./api/routes/rbacRoutes'));
 
 // Novas rotas para integração 100% com painel web
 app.use('/api/dashboard', dashboardRoutes);

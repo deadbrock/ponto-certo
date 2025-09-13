@@ -19,6 +19,8 @@ const rbacManager = require('./utils/rbacManager');
 const alertManager = require('./utils/alertManager');
 const alertEscalationManager = require('./utils/alertEscalation');
 const alertIntegrationMiddleware = require('./api/middlewares/alertIntegrationMiddleware');
+const disasterRecoveryManager = require('./utils/disasterRecovery');
+const dataRecoveryValidator = require('./utils/dataRecoveryValidator');
 console.log('📋 Sistema de auditoria inicializado');
 console.log('🛡️ Monitor de segurança inicializado');
 console.log('📊 Monitor de performance inicializado');
@@ -27,6 +29,8 @@ console.log('🛡️ RBAC Manager inicializado');
 console.log('🚨 Alert Manager inicializado');
 console.log('⬆️ Alert Escalation Manager inicializado');
 console.log('🔗 Alert Integration Middleware inicializado');
+console.log('🚨 Disaster Recovery Manager inicializado');
+console.log('🔄 Data Recovery Validator inicializado');
 
 // Importar middlewares de rate limiting avançado
 const { 
@@ -377,6 +381,7 @@ app.use('/api/security', sensitiveEndpointsLimiter, require('./api/routes/securi
 app.use('/api/performance', sensitiveEndpointsLimiter, require('./api/routes/performanceRoutes'));
 app.use('/api/rbac', sensitiveEndpointsLimiter, require('./api/routes/rbacRoutes'));
 app.use('/api/alerts', sensitiveEndpointsLimiter, require('./api/routes/alertRoutes'));
+app.use('/api/recovery', sensitiveEndpointsLimiter, require('./api/routes/recoveryRoutes'));
 
 // Novas rotas para integração 100% com painel web
 app.use('/api/dashboard', dashboardRoutes);

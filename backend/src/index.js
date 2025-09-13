@@ -21,6 +21,7 @@ const alertEscalationManager = require('./utils/alertEscalation');
 const alertIntegrationMiddleware = require('./api/middlewares/alertIntegrationMiddleware');
 const disasterRecoveryManager = require('./utils/disasterRecovery');
 const dataRecoveryValidator = require('./utils/dataRecoveryValidator');
+const performanceOptimizations = require('./utils/performanceOptimizations');
 console.log('📋 Sistema de auditoria inicializado');
 console.log('🛡️ Monitor de segurança inicializado');
 console.log('📊 Monitor de performance inicializado');
@@ -31,6 +32,7 @@ console.log('⬆️ Alert Escalation Manager inicializado');
 console.log('🔗 Alert Integration Middleware inicializado');
 console.log('🚨 Disaster Recovery Manager inicializado');
 console.log('🔄 Data Recovery Validator inicializado');
+console.log('⚡ Performance Optimizations inicializadas');
 
 // Importar middlewares de rate limiting avançado
 const { 
@@ -215,7 +217,10 @@ app.use(alertIntegrationMiddleware.bruteForceDetectionMiddleware());
 app.use(alertIntegrationMiddleware.botDetectionMiddleware());
 app.use(alertIntegrationMiddleware.dataExfiltrationDetectionMiddleware());
 
-// 5. Headers de segurança (Helmet) - REATIVADO
+// 5. Otimizações de performance pós-stress test
+performanceOptimizations.applyOptimizations(app);
+
+// 6. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
 
 // 3. HTTPS é gerenciado pelo Railway (proxy reverso)

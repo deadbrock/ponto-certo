@@ -16,11 +16,17 @@ const securityMonitor = require('./utils/securityMonitor');
 const performanceMonitor = require('./utils/performanceMonitor');
 const cacheManager = require('./utils/cacheManager');
 const rbacManager = require('./utils/rbacManager');
+const alertManager = require('./utils/alertManager');
+const alertEscalationManager = require('./utils/alertEscalation');
+const alertIntegrationMiddleware = require('./api/middlewares/alertIntegrationMiddleware');
 console.log('📋 Sistema de auditoria inicializado');
 console.log('🛡️ Monitor de segurança inicializado');
 console.log('📊 Monitor de performance inicializado');
 console.log('🧠 Cache manager inicializado');
 console.log('🛡️ RBAC Manager inicializado');
+console.log('🚨 Alert Manager inicializado');
+console.log('⬆️ Alert Escalation Manager inicializado');
+console.log('🔗 Alert Integration Middleware inicializado');
 
 // Importar middlewares de rate limiting avançado
 const { 
@@ -198,7 +204,14 @@ app.use(securityMonitor.middleware());
 // 3. Monitor de performance em tempo real
 app.use(performanceMonitor.middleware());
 
-// 4. Headers de segurança (Helmet) - REATIVADO
+// 4. Sistema de alertas integrado
+app.use(alertIntegrationMiddleware.middleware());
+app.use(alertIntegrationMiddleware.anomalyDetectionMiddleware());
+app.use(alertIntegrationMiddleware.bruteForceDetectionMiddleware());
+app.use(alertIntegrationMiddleware.botDetectionMiddleware());
+app.use(alertIntegrationMiddleware.dataExfiltrationDetectionMiddleware());
+
+// 5. Headers de segurança (Helmet) - REATIVADO
 app.use(helmet(helmetConfig));
 
 // 3. HTTPS é gerenciado pelo Railway (proxy reverso)
@@ -363,6 +376,7 @@ app.use('/api/mapa', mapaRoutes);
 app.use('/api/security', sensitiveEndpointsLimiter, require('./api/routes/securityRoutes'));
 app.use('/api/performance', sensitiveEndpointsLimiter, require('./api/routes/performanceRoutes'));
 app.use('/api/rbac', sensitiveEndpointsLimiter, require('./api/routes/rbacRoutes'));
+app.use('/api/alerts', sensitiveEndpointsLimiter, require('./api/routes/alertRoutes'));
 
 // Novas rotas para integração 100% com painel web
 app.use('/api/dashboard', dashboardRoutes);

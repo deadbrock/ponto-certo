@@ -6,7 +6,14 @@
  */
 
 const NodeCache = require('node-cache');
-const Redis = require('redis');
+let Redis = null;
+try {
+  // Carrega redis apenas se o módulo existir no ambiente
+  // Evita quebra em ambientes sem Redis
+  Redis = require('redis');
+} catch (e) {
+  Redis = null;
+}
 const crypto = require('crypto');
 const zlib = require('zlib');
 const fs = require('fs');
@@ -112,6 +119,9 @@ class CacheManager {
    */
   async initializeRedis() {
     try {
+      if (!Redis) {
+        throw new Error('módulo redis não instalado');
+      }
       const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
       this.l2Cache = Redis.createClient({ url: redisUrl });
       

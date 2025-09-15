@@ -8,12 +8,13 @@
     "numReplicas": 1,
     "sleepApplication": false,
     "restartPolicyType": "ON_FAILURE",
-    "startCommand": "cd backend && node src/index.js"
+    "startCommand": "cd backend && npm start"
   },
   "environments": {
     "production": {
       "variables": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "NIXPACKS_NODE_VERSION": "18"
       }
     }
   }

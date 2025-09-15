@@ -61,9 +61,9 @@ const getAllowedOrigins = () => {
     origins.push(...process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim()));
   }
   
-  // Fallback para URL padrão atual
+  // Fallback para URL padrão atual (dos logs)
   if (origins.length === 0) {
-    origins.push('https://ponto-digital-painel-dgjzsh4hp-douglas-projects-c2be5a2b.vercel.app');
+    origins.push('https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app');
   }
   
   // Localhost APENAS em desenvolvimento
@@ -138,7 +138,7 @@ if (process.env.NODE_ENV === 'production') {
   console.log('🔧 Trust proxy configurado para desenvolvimento');
 }
 
-// ===== HEALTH CHECK ENDPOINT (ANTES DOS MIDDLEWARES) =====
+// ===== ENDPOINTS PÚBLICOS (ANTES DOS MIDDLEWARES) =====
 app.get('/', (req, res) => {
   res.status(200).json({
     status: 'online',
@@ -146,6 +146,27 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: '1.0.0'
+  });
+});
+
+// Manifest.json público para PWA
+app.get('/manifest.json', (req, res) => {
+  res.status(200).json({
+    "short_name": "Ponto Digital",
+    "name": "Sistema Ponto Digital FG",
+    "description": "Sistema de Gestão de Ponto Digital com Reconhecimento Facial",
+    "icons": [
+      {
+        "src": "/favicon.ico",
+        "sizes": "64x64 32x32 24x24 16x16",
+        "type": "image/x-icon"
+      }
+    ],
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#1976d2",
+    "background_color": "#ffffff",
+    "scope": "/"
   });
 });
 

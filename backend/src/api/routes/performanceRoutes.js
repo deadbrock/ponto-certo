@@ -8,7 +8,7 @@ const { requireAdmin } = require('../middlewares/roleMiddleware');
 
 // Todas as rotas de performance requerem autenticação de admin
 router.use(authMiddleware);
-router.use(requireAdmin(['ADMINISTRADOR']));
+router.use(requireAdmin);
 
 /**
  * @route GET /api/performance/dashboard

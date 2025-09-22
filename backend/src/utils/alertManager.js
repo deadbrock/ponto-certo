@@ -11,7 +11,15 @@
  */
 
 const EventEmitter = require('events');
-const nodemailer = require('nodemailer');
+let nodemailer = null;
+try {
+  // Carrega nodemailer apenas se o módulo existir no ambiente
+  // Evita quebra em ambientes sem nodemailer
+  nodemailer = require('nodemailer');
+} catch (e) {
+  console.log('⚠️ Nodemailer não disponível: módulo nodemailer não instalado');
+  nodemailer = null;
+}
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
@@ -445,6 +453,10 @@ class AlertManager extends EventEmitter {
    * Criar transportador de email
    */
   createEmailTransporter(config) {
+    if (!nodemailer) {
+      console.log('⚠️ Email não configurado: nodemailer não disponível');
+      return null;
+    }
     return nodemailer.createTransporter(config.smtp);
   }
 
@@ -904,8 +916,8 @@ class AlertManager extends EventEmitter {
   async sendEmailNotification(alert, config) {
     try {
       const transporter = this.notificationChannels.get('email');
-      if (!transporter) {
-        console.warn('⚠️ Transportador de email não configurado');
+      if (!transporter || !nodemailer) {
+        console.warn('⚠️ Transportador de email não configurado ou nodemailer não disponível');
         return false;
       }
 

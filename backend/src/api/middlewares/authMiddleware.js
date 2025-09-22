@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const sessionManager = require('../utils/sessionManager');
+const sessionManager = require('../../utils/sessionManager');
 
 const authMiddleware = async (req, res, next) => {
     console.log('🔐 AuthMiddleware: Verificando autenticação...');

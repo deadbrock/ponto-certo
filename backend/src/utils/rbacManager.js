@@ -9,12 +9,15 @@
  * - Auditoria completa de acessos
  */
 
+const EventEmitter = require('events');
 const auditLogger = require('./auditLogger');
 const cacheManager = require('./cacheManager');
 const db = require('../config/database');
 
-class RBACManager {
+class RBACManager extends EventEmitter {
   constructor() {
+    super();
+    
     // Cache de permissões para performance
     this.permissionsCache = new Map();
     this.rolesCache = new Map();
@@ -375,6 +378,18 @@ class RBACManager {
       const cachedPermissions = await this.getCachedPermissions(userId);
       if (cachedPermissions) {
         const hasAccess = this.checkPermissionInCache(cachedPermissions, permission, context);
+        
+        // Emitir evento se permissão foi negada
+        if (!hasAccess) {
+          this.emit('permission_denied', {
+            userId,
+            permission,
+            context,
+            timestamp: new Date(),
+            source: 'cache'
+          });
+        }
+        
         this.auditAccess(userId, permission, hasAccess, 'cache', Date.now() - startTime);
         return hasAccess;
       }
@@ -387,6 +402,17 @@ class RBACManager {
       
       // Verificar permissão
       const hasAccess = this.checkPermissionInList(userPermissions, permission, context);
+      
+      // Emitir evento se permissão foi negada
+      if (!hasAccess) {
+        this.emit('permission_denied', {
+          userId,
+          permission,
+          context,
+          timestamp: new Date(),
+          source: 'database'
+        });
+      }
       
       this.auditAccess(userId, permission, hasAccess, 'database', Date.now() - startTime);
       return hasAccess;

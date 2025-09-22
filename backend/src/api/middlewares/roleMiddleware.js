@@ -1,4 +1,5 @@
 const secureLogger = require('../../utils/secureLogger');
+const rbacManager = require('../../utils/rbacManager');
 
 /**
  * Middleware de Autorização Baseada em Perfil (RBAC)

@@ -125,9 +125,21 @@ class CacheManager {
       const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
       this.l2Cache = Redis.createClient({ url: redisUrl });
       
+      // Rate limiting para erros de Redis
+      let lastRedisErrorAt = 0;
       this.l2Cache.on('error', (err) => {
-        console.warn('⚠️ Redis error:', err);
-        this.redisConnected = false;
+        const now = Date.now();
+        if (now - lastRedisErrorAt > 5000) { // no máximo 1 log a cada 5s
+          console.warn('⚠️ Redis error:', err?.code || err?.message || err);
+          lastRedisErrorAt = now;
+        }
+        // Desabilita L2 se conexão recusada
+        if (err && (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED'))) {
+          this.redisConnected = false;
+          // Tenta um backoff simples: desconecta cliente
+          try { this.l2Cache.disconnect().catch(()=>{}); } catch(e) {}
+          this.l2Cache = null;
+        }
       });
 
       this.l2Cache.on('connect', () => {
@@ -137,7 +149,8 @@ class CacheManager {
 
       await this.l2Cache.connect();
     } catch (error) {
-      console.warn('⚠️ Redis não disponível:', error.message);
+      // Silenciar ruído em produção e seguir sem Redis
+      console.warn('⚠️ Redis não disponível:', error?.code || error?.message || String(error));
       this.l2Cache = null;
       this.redisConnected = false;
     }

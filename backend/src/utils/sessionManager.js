@@ -21,6 +21,11 @@ class SessionManager {
     
     // Iniciar limpeza automática
     this.startCleanupTimer();
+
+    // Garantir que a tabela de sessões exista (executa em background)
+    this.ensureSessionTable().catch((err) => {
+      console.error('❌ SESSION TABLE INIT ERROR:', err);
+    });
   }
 
   /**
@@ -28,6 +33,9 @@ class SessionManager {
    */
   async createSession(userId, userEmail, userProfile, req) {
     try {
+      // Garante a existência da tabela antes de qualquer operação
+      await this.ensureSessionTable();
+
       const sessionId = this.generateSessionId();
       const now = new Date();
       const expiresAt = new Date(now.getTime() + this.defaultTimeout);
@@ -92,6 +100,43 @@ class SessionManager {
     } catch (error) {
       console.error('❌ SESSION ERROR: Falha ao criar sessão:', error);
       throw new Error('Falha ao criar sessão');
+    }
+  }
+
+  /**
+   * Garantir criação da tabela de sessões caso não exista
+   */
+  async ensureSessionTable() {
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS audit_sessions (
+          session_id VARCHAR(255) PRIMARY KEY,
+          user_id INTEGER NOT NULL,
+          start_time TIMESTAMP NOT NULL,
+          last_activity TIMESTAMP NOT NULL,
+          expires_at TIMESTAMP NOT NULL,
+          login_ip VARCHAR(100),
+          login_user_agent TEXT,
+          login_method VARCHAR(50),
+          active BOOLEAN DEFAULT true,
+          end_time TIMESTAMP NULL,
+          logout_reason VARCHAR(50),
+          actions_count INTEGER DEFAULT 0
+        );
+      `);
+
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_audit_sessions_user_active
+        ON audit_sessions(user_id, active);
+      `);
+
+      await db.query(`
+        CREATE INDEX IF NOT EXISTS idx_audit_sessions_expires_at
+        ON audit_sessions(expires_at);
+      `);
+    } catch (err) {
+      // Se o erro for diferente de permissão/DDL, apenas propaga
+      throw err;
     }
   }
 
@@ -266,6 +311,7 @@ class SessionManager {
    */
   async enforceSessionLimit(userId) {
     try {
+      await this.ensureSessionTable();
       // Contar sessões ativas do usuário
       const result = await db.query(
         'SELECT COUNT(*) as count FROM audit_sessions WHERE user_id = $1 AND active = true',
@@ -298,28 +344,56 @@ class SessionManager {
    * Salvar sessão no banco de dados
    */
   async saveSessionToDatabase(sessionData) {
-    await db.query(`
-      INSERT INTO audit_sessions (
-        session_id, user_id, start_time, last_activity, expires_at,
-        login_ip, login_user_agent, login_method, active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-    `, [
-      sessionData.session_id,
-      sessionData.user_id,
-      sessionData.start_time,
-      sessionData.last_activity,
-      sessionData.expires_at,
-      sessionData.login_ip,
-      sessionData.login_user_agent,
-      sessionData.login_method,
-      sessionData.active
-    ]);
+    try {
+      await db.query(`
+        INSERT INTO audit_sessions (
+          session_id, user_id, start_time, last_activity, expires_at,
+          login_ip, login_user_agent, login_method, active
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `, [
+        sessionData.session_id,
+        sessionData.user_id,
+        sessionData.start_time,
+        sessionData.last_activity,
+        sessionData.expires_at,
+        sessionData.login_ip,
+        sessionData.login_user_agent,
+        sessionData.login_method,
+        sessionData.active
+      ]);
+    } catch (err) {
+      if (err && err.code === '42P01') { // tabela não existe
+        await this.ensureSessionTable();
+        // tenta novamente uma vez
+        await db.query(`
+          INSERT INTO audit_sessions (
+            session_id, user_id, start_time, last_activity, expires_at,
+            login_ip, login_user_agent, login_method, active
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `, [
+          sessionData.session_id,
+          sessionData.user_id,
+          sessionData.start_time,
+          sessionData.last_activity,
+          sessionData.expires_at,
+          sessionData.login_ip,
+          sessionData.login_user_agent,
+          sessionData.login_method,
+          sessionData.active
+        ]);
+      } else {
+        throw err;
+      }
+    }
   }
 
   /**
    * Buscar sessão no banco de dados
    */
   async getSessionFromDatabase(sessionId) {
+    // Garante tabela
+    await this.ensureSessionTable();
+
     const result = await db.query(
       'SELECT * FROM audit_sessions WHERE session_id = $1 AND active = true',
       [sessionId]
@@ -343,6 +417,7 @@ class SessionManager {
     
     // Atualizar banco (batch a cada 10 ações para performance)
     if (!session || session.actions_count % 10 === 0) {
+      await this.ensureSessionTable();
       await db.query(
         'UPDATE audit_sessions SET last_activity = $1, actions_count = actions_count + 1 WHERE session_id = $2',
         [now, sessionId]
@@ -354,6 +429,7 @@ class SessionManager {
    * Atualizar expiração da sessão
    */
   async updateSessionExpiration(sessionId, newExpiresAt) {
+    await this.ensureSessionTable();
     await db.query(
       'UPDATE audit_sessions SET expires_at = $1 WHERE session_id = $2',
       [newExpiresAt, sessionId]
@@ -366,6 +442,7 @@ class SessionManager {
   async deactivateSessionInDatabase(sessionId, reason) {
     const now = new Date();
     
+    await this.ensureSessionTable();
     await db.query(`
       UPDATE audit_sessions 
       SET active = false, end_time = $1, logout_reason = $2
@@ -396,6 +473,7 @@ class SessionManager {
       }
       
       // Limpar banco de dados
+      await this.ensureSessionTable();
       const result = await db.query(`
         UPDATE audit_sessions 
         SET active = false, end_time = $1, logout_reason = 'expired'

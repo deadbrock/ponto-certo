@@ -45,6 +45,11 @@ class DisasterRecoveryManager extends EventEmitter {
     this.currentState = this.systemStates.HEALTHY;
     this.lastStateChange = Date.now();
     
+    // Rate limiting timestamps
+    this.lastFailureLog = 0;
+    this.lastStateChangeLog = 0;
+    this.lastAuditLog = 0;
+    
     // Configurações
     this.config = {
       healthCheckInterval: 60000, // 1 minuto
@@ -583,18 +588,32 @@ class DisasterRecoveryManager extends EventEmitter {
    */
   async changeSystemState(newState, healthChecks = []) {
     const previousState = this.currentState;
+    
+    // Evitar mudanças desnecessárias de estado
+    if (previousState === newState) {
+      return;
+    }
+    
     this.currentState = newState;
     this.lastStateChange = Date.now();
 
-    console.log(`🔄 Estado do sistema alterado: ${previousState} → ${newState}`);
+    // Rate limiting para logs de mudança de estado
+    const now = Date.now();
+    if (!this.lastStateChangeLog || now - this.lastStateChangeLog > 2000) { // Máximo 1 log a cada 2 segundos
+      console.log(`🔄 Estado do sistema alterado: ${previousState} → ${newState}`);
+      this.lastStateChangeLog = now;
+    }
 
-    // Registrar mudança de estado
-    await auditLogger.logSystemEvent('SYSTEM_STATE_CHANGE', {
-      previous_state: previousState,
-      new_state: newState,
-      health_checks: healthChecks,
-      timestamp: new Date()
-    });
+    // Registrar mudança de estado (com rate limiting)
+    if (!this.lastAuditLog || now - this.lastAuditLog > 10000) { // Máximo 1 audit a cada 10 segundos
+      await auditLogger.logSystemEvent('SYSTEM_STATE_CHANGE', {
+        previous_state: previousState,
+        new_state: newState,
+        health_checks: healthChecks,
+        timestamp: new Date()
+      });
+      this.lastAuditLog = now;
+    }
 
     // Disparar ações baseadas no novo estado
     await this.handleStateChange(newState, previousState);
@@ -1045,8 +1064,17 @@ class DisasterRecoveryManager extends EventEmitter {
   }
 
   handleSystemFailure(type, error) {
-    console.error(`💥 Falha crítica do sistema: ${type}`, error);
-    this.changeSystemState(this.systemStates.DISASTER);
+    // Rate limiting para evitar loops infinitos de logs
+    const now = Date.now();
+    if (!this.lastFailureLog || now - this.lastFailureLog > 5000) { // Máximo 1 log a cada 5 segundos
+      console.error(`💥 Falha crítica do sistema: ${type}`, error);
+      this.lastFailureLog = now;
+    }
+    
+    // Evitar mudanças de estado em loop se já estiver em DISASTER
+    if (this.currentState !== this.systemStates.DISASTER) {
+      this.changeSystemState(this.systemStates.DISASTER);
+    }
   }
 
   async handleRecoveryComplete() {

@@ -351,5 +351,7 @@ module.exports = {
   requireAdminOrRH,
   requireManagement,
   requireHighLevel,
+  requireRBACPermission,
+  requireAnyRBACPermission,
   PERFIS
 };

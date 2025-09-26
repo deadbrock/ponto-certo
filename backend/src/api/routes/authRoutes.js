@@ -10,13 +10,13 @@ const { loginLimiter } = require('../middlewares/rateLimitMiddleware');
 // POST /api/auth/register
 router.post('/register', authController.register);
 
-// Rota para login do colaborador - COM RATE LIMITING
+// Rota para login do colaborador (rate limiting aplicado globalmente em index.js)
 // POST /api/auth/login
-router.post('/login', loginLimiter, authController.login);
+router.post('/login', authController.login);
 
-// Rota para login de usuários administrativos (painel web) - COM RATE LIMITING
+// Rota para login de usuários administrativos (painel web)
 // POST /api/auth/login-admin
-router.post('/login-admin', loginLimiter, authController.loginAdmin);
+router.post('/login-admin', authController.loginAdmin);
 
 // Rota de emergência para criar usuário administrador - PROTEGIDA
 // GET /api/auth/criar-admin-emergencia

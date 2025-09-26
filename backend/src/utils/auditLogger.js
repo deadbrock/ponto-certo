@@ -26,6 +26,11 @@ class AuditLogger {
     
     // Iniciar flush automático
     this.startBatchProcessor();
+
+    // Garantir tabelas de auditoria
+    this.ensureAuditTables().catch(err => {
+      console.error('❌ AUDIT INIT ERROR:', err);
+    });
   }
 
   /**
@@ -296,7 +301,62 @@ class AuditLogger {
       ) VALUES ${placeholders.join(', ')}
     `;
     
-    await db.query(query, values);
+    try {
+      await db.query(query, values);
+    } catch (err) {
+      if (err && err.code === '42P01') {
+        await this.ensureAuditTables();
+        await db.query(query, values);
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  async ensureAuditTables() {
+    if (this._ensuringAuditTables) return;
+    this._ensuringAuditTables = true;
+    try {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS logs_auditoria (
+          id SERIAL PRIMARY KEY,
+          timestamp TIMESTAMP NOT NULL,
+          action VARCHAR(100),
+          category VARCHAR(100),
+          severity VARCHAR(20),
+          user_id INTEGER,
+          user_email VARCHAR(255),
+          user_profile VARCHAR(100),
+          user_ip VARCHAR(100),
+          user_agent TEXT,
+          method VARCHAR(10),
+          endpoint TEXT,
+          request_id VARCHAR(100),
+          session_id VARCHAR(255),
+          status_code INTEGER,
+          response_time_ms INTEGER,
+          success BOOLEAN,
+          resource_type VARCHAR(100),
+          resource_id VARCHAR(100),
+          old_values JSONB,
+          new_values JSONB,
+          additional_data JSONB,
+          source VARCHAR(100),
+          environment VARCHAR(50),
+          data_subject_cpf VARCHAR(20),
+          legal_basis VARCHAR(100),
+          consent_id VARCHAR(100),
+          data_category VARCHAR(100),
+          tags TEXT,
+          retention_days INTEGER DEFAULT 2555
+        );
+      `);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_logs_auditoria_timestamp ON logs_auditoria(timestamp)`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_logs_auditoria_user ON logs_auditoria(user_id)`);
+      await db.query(`CREATE INDEX IF NOT EXISTS idx_logs_auditoria_endpoint ON logs_auditoria(endpoint)`);
+    } finally {
+      this._ensuringAuditTables = false;
+    }
   }
 
   /**

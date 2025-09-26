@@ -19,8 +19,7 @@ import {
   Notifications as NotificationsIcon,
   Groups as GroupsIcon,
   Business as BusinessIcon,
-  Map as MapIcon,
-  Explore as ExploreIcon
+  
 } from '@mui/icons-material';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -155,59 +154,6 @@ const Sidebar: React.FC = () => {
         <ListItem disablePadding>
           <ListItemButton
             component={Link}
-            to="/contratos/mapa"
-            selected={location.pathname === '/contratos/mapa'}
-            sx={{ 
-              backgroundColor: location.pathname === '/contratos/mapa' ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
-              borderLeft: location.pathname === '/contratos/mapa' ? '4px solid #1976d2' : 'none'
-            }}
-          >
-            <ListItemIcon><MapIcon sx={{ color: location.pathname === '/contratos/mapa' ? '#1976d2' : 'inherit' }} /></ListItemIcon>
-            <ListItemText 
-              primary="🗺️ Mapa de Atuação" 
-              primaryTypographyProps={{ 
-                sx: { 
-                  color: location.pathname === '/contratos/mapa' ? '#1976d2' : 'inherit',
-                  fontWeight: location.pathname === '/contratos/mapa' ? 600 : 400
-                }
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/contratos/mapa-avancado"
-            selected={location.pathname === '/contratos/mapa-avancado'}
-            sx={{ 
-              backgroundColor: location.pathname === '/contratos/mapa-avancado' ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
-              borderLeft: location.pathname === '/contratos/mapa-avancado' ? '4px solid #1976d2' : 'none',
-              pl: 4
-            }}
-          >
-            <ListItemIcon><ExploreIcon sx={{ color: location.pathname === '/contratos/mapa-avancado' ? '#1976d2' : 'inherit' }} /></ListItemIcon>
-            <ListItemText 
-              primary="🚀 Mapa Avançado" 
-              secondary="Interativo • Zoom • Export"
-              primaryTypographyProps={{ 
-                sx: { 
-                  color: location.pathname === '/contratos/mapa-avancado' ? '#1976d2' : 'inherit',
-                  fontWeight: location.pathname === '/contratos/mapa-avancado' ? 600 : 400,
-                  fontSize: '0.9rem'
-                }
-              }}
-              secondaryTypographyProps={{
-                sx: {
-                  fontSize: '0.75rem',
-                  color: location.pathname === '/contratos/mapa-avancado' ? '#1976d2' : 'text.secondary'
-                }
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
             to="/configuracoes-infra"
             selected={location.pathname === '/configuracoes-infra'}
           >
@@ -235,28 +181,7 @@ const Sidebar: React.FC = () => {
             <ListItemText primary="Suporte" />
           </ListItemButton>
         </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to="/teste-excel"
-            selected={location.pathname === '/teste-excel'}
-            sx={{ 
-              bgcolor: location.pathname === '/teste-excel' ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
-              borderLeft: location.pathname === '/teste-excel' ? '4px solid #1976d2' : 'none'
-            }}
-          >
-            <ListItemIcon><BugReportIcon sx={{ color: '#1976d2' }} /></ListItemIcon>
-            <ListItemText 
-              primary="🧪 Teste Excel" 
-              primaryTypographyProps={{ 
-                sx: { 
-                  color: location.pathname === '/teste-excel' ? '#1976d2' : 'inherit',
-                  fontWeight: location.pathname === '/teste-excel' ? 600 : 400
-                }
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
+        { /* Entradas de Mapa e Teste Excel removidas */ }
         {(usuario?.perfil === 'Administrador' || usuario?.perfil === 'RH') && (
           <>
             <ListItem disablePadding>

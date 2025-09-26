@@ -434,7 +434,7 @@ app.listen(PORT, async () => {
     console.log(`📱 Endpoint de reconhecimento facial: http://localhost:${PORT}/api/face/recognize`);
     console.log(`🔍 Health check: http://localhost:${PORT}/`);
     console.log(`📊 Teste DB: http://localhost:${PORT}/db-test`);
-    console.log(`🗺️ Mapa de Atuação: http://localhost:${PORT}/api/contratos/mapa-atuacao`);
+    // Mapa de Atuação removido
     
     try {
         const result = await db.query('SELECT NOW()');

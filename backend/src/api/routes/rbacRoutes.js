@@ -690,11 +690,11 @@ router.post('/bulk-migrate', requireAdmin, async (req, res) => {
 });
 
 /**
- * @route DELETE /api/rbac/cache/:userId?
- * @desc Limpar cache de permissões
+ * @route DELETE /api/rbac/cache/:userId
+ * @desc Limpar cache de permissões de usuário específico
  * @access Admin only
  */
-router.delete('/cache/:userId?', requireAdmin, async (req, res) => {
+router.delete('/cache/:userId', requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
 

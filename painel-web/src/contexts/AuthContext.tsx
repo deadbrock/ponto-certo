@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { loginApi, UsuarioBackend } from '../services/api';
+import sessionManager from '../utils/sessionManager';
 
 export type Perfil = 'administrador' | 'Administrador' | 'Gestor' | 'RH';
 
@@ -17,6 +18,8 @@ const AuthContext = createContext<AuthContextProps>({
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [usuario, setUsuario] = useState<UsuarioBackend | null>(null);
+  const [loginAttempts, setLoginAttempts] = useState<number>(0);
+  const [loginInFlight, setLoginInFlight] = useState<boolean>(false);
 
   useEffect(() => {
     // Configurar callbacks do SessionManager
@@ -40,6 +43,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, senha: string) => {
     try {
+      if (loginInFlight) {
+        console.warn('⏳ AuthContext: Login já em andamento, ignorando nova tentativa');
+        return false;
+      }
+
+      // backoff exponencial simples: 0s, 2s, 4s, 8s, máx 15s
+      const clampedAttempts = Math.min(loginAttempts, 3);
+      const delayMs = clampedAttempts === 0 ? 0 : Math.min(15000, 2000 * Math.pow(2, clampedAttempts - 1));
+      if (delayMs > 0) {
+        console.log(`⏱️ AuthContext: Aguardando backoff de ${delayMs}ms antes do login`);
+        await new Promise(res => setTimeout(res, delayMs));
+      }
+
+      setLoginInFlight(true);
       console.log('🔑 AuthContext: Iniciando login...');
       const res = await loginApi(email, senha);
       
@@ -63,14 +80,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('🕐 SessionManager inicializado');
         console.log('🎯 Redirecionamento deve acontecer automaticamente agora!');
         
+        // resetar backoff
+        setLoginAttempts(0);
+        setLoginInFlight(false);
         return true;
       } else {
         console.warn('⚠️ AuthContext: Login falhou - sem token ou success=false');
         console.warn('📋 Resposta completa:', res);
+        setLoginAttempts(prev => Math.min(prev + 1, 4));
+        setLoginInFlight(false);
         return false;
       }
     } catch (error: any) {
       console.error('❌ AuthContext: Erro no login:', error);
+      setLoginAttempts(prev => Math.min(prev + 1, 4));
+      setLoginInFlight(false);
       return false;
     }
   };

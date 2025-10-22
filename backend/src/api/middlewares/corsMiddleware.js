@@ -14,6 +14,7 @@ const getAllowedOrigins = () => {
   if (isProduction) {
     return [
       // URLs ATUAIS e VÁLIDAS apenas
+      'https://ponto-digital-painel.vercel.app', // URL de produção Vercel
       'https://ponto-certo-production.up.railway.app',
       'https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app', // URL dos logs
       'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app',

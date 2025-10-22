@@ -10,6 +10,7 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Lista de origens permitidas (produção)
     const allowedOrigins = [
+      'https://ponto-digital-painel.vercel.app', // URL de produção Vercel
       'https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app', // URL ATUAL LOGS
       'https://ponto-digital-painel-8hf7kmuxj-douglas-projects-c2be5a2b.vercel.app', // URL anterior
       'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app', // URL histórica

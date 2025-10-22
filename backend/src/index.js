@@ -61,8 +61,9 @@ const getAllowedOrigins = () => {
     origins.push(...process.env.CORS_ALLOWED_ORIGINS.split(',').map(url => url.trim()));
   }
   
-  // Fallback para URL padrão atual (dos logs)
+  // Fallback para URL padrão atual (produção Vercel)
   if (origins.length === 0) {
+    origins.push('https://ponto-digital-painel.vercel.app');
     origins.push('https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app');
   }
   

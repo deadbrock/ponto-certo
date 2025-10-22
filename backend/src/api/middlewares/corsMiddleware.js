@@ -19,6 +19,7 @@ const getAllowedOrigins = () => {
       'https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app', // URL dos logs
       'https://ponto-digital-painel-ekytsq6ob-douglas-projects-c2be5a2b.vercel.app',
       'https://ponto-digital-painel-8hf7kmuxj-douglas-projects-c2be5a2b.vercel.app',
+      'https://ponto-digital-painel-9se0m9qx3-douglas-projects-c2be5a2b.vercel.app', // URL preview atual
       'https://pontodigitalclean-pegasus.up.railway.app', // URL do backend dos logs
       // Adicionar novas URLs Vercel quando necessário
     ];

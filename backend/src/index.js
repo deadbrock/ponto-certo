@@ -65,6 +65,7 @@ const getAllowedOrigins = () => {
   if (origins.length === 0) {
     origins.push('https://ponto-digital-painel.vercel.app');
     origins.push('https://ponto-digital-painel-ow1hpupv0-douglas-projects-c2be5a2b.vercel.app');
+    origins.push('https://ponto-digital-painel-9se0m9qx3-douglas-projects-c2be5a2b.vercel.app');
   }
   
   // Localhost APENAS em desenvolvimento

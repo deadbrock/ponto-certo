@@ -213,7 +213,7 @@ app.use((req, res, next) => {
   // Log de tentativas de acesso
   if (origin && !allowedOrigins.includes(origin)) {
     console.warn(`🚨 CORS: Origem bloqueada: ${origin} de IP: ${req.ip}`);
-    secureLogger.warn('CORS_BLOCKED', {
+    secureLogger.security('warn', 'CORS_BLOCKED', {
       origin,
       ip: req.ip,
       userAgent: req.headers['user-agent'],

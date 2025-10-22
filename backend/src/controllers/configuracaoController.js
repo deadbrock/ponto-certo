@@ -120,8 +120,7 @@ const realizarBackup = async (req, res) => {
         const queries = [
             'SELECT COUNT(*) FROM colaboradores',
             'SELECT COUNT(*) FROM registros_ponto',
-            'SELECT COUNT(*) FROM usuarios',
-            'SELECT COUNT(*) FROM contratos'
+            'SELECT COUNT(*) FROM usuarios'
         ];
 
         const results = await Promise.all(queries.map(query => db.query(query)));
@@ -129,8 +128,7 @@ const realizarBackup = async (req, res) => {
         const estatisticas = {
             colaboradores: parseInt(results[0].rows[0].count),
             registros_ponto: parseInt(results[1].rows[0].count),
-            usuarios: parseInt(results[2].rows[0].count),
-            contratos: parseInt(results[3].rows[0].count)
+            usuarios: parseInt(results[2].rows[0].count)
         };
 
         // Registrar backup na tabela de configurações

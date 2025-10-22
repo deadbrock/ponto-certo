@@ -154,7 +154,6 @@ class EncryptedBackupManager {
       usuarios: await this.getTableData('usuarios', this.sanitizeUsuarios),
       colaboradores: await this.getTableData('colaboradores', this.sanitizeColaboradores),
       registros_ponto: await this.getTableData('registros_ponto'),
-      contratos: await this.getTableData('contratos'),
       configuracoes: await this.getTableData('configuracoes'),
       audit_sessions: await this.getTableData('audit_sessions', this.sanitizeAuditSessions),
       logs_auditoria: await this.getTableData('logs_auditoria', this.sanitizeLogs)

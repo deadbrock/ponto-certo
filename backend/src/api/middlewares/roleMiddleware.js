@@ -17,7 +17,7 @@ const PERFIS = {
     permissoes: [
       'usuarios:read', 'usuarios:create', 'usuarios:update',
       'colaboradores:*', 'relatorios:*', 'escalas:*',
-      'atestados:*', 'frequencia:*', 'auditoria:read'
+      'frequencia:*', 'auditoria:read'
     ]
   },
   GESTOR: {
@@ -30,7 +30,7 @@ const PERFIS = {
   COLABORADOR: {
     nivel: 20,
     permissoes: [
-      'ponto:create', 'escalas:read:own', 'atestados:create:own'
+      'ponto:create', 'escalas:read:own'
     ]
   }
 };

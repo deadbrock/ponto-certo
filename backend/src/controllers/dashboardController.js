@@ -38,13 +38,10 @@ const obterEstatisticas = async (req, res) => {
         const registrosOntemResult = await db.query(registrosOntemQuery);
         const registros_ontem = parseInt(registrosOntemResult.rows[0].total) || 0;
 
-        // 4. Atestados pendentes (simulado - será implementado quando houver tabela)
-        const atestados_pendentes = 0;
-
-        // 5. Relatórios gerados este mês (simulado)
+        // 4. Relatórios gerados este mês (simulado)
         const relatorios_mes = Math.floor(registros_hoje / 10); // Estimativa baseada em registros
 
-        // 6. Calcular trending
+        // 5. Calcular trending
         const trend_registros = registros_ontem > 0 
             ? `${((registros_hoje - registros_ontem) / registros_ontem * 100).toFixed(1)}%`
             : '+0%';
@@ -56,11 +53,9 @@ const obterEstatisticas = async (req, res) => {
             dados: {
                 colaboradores_ativos,
                 registros_hoje,
-                atestados_pendentes,
                 relatorios_mes,
                 trend_colaboradores,
                 trend_registros,
-                trend_atestados: '+0%',
                 trend_relatorios: '+0%',
                 ultima_atualizacao: new Date().toISOString()
             }

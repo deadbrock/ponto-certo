@@ -110,7 +110,6 @@ const relatoriosRoutes = require('./api/routes/relatoriosRoutes');
 const auditoriaRoutes = require('./api/routes/auditoriaRoutes');
 const usuarioRoutes = require('./api/routes/usuarioRoutes');
 const colaboradorRoutes = require('./api/routes/colaboradorRoutes');
-const atestadoRoutes = require('./api/routes/atestadoRoutes');
 const escalaRoutes = require('./api/routes/escalaRoutes');
 const feriadoRoutes = require('./api/routes/feriadoRoutes');
 const configuracaoRoutes = require('./api/routes/configuracaoRoutes');
@@ -121,7 +120,6 @@ const frequenciaRoutes = require('./api/routes/frequenciaRoutes');
 const dashboardRoutes = require('./api/routes/dashboardRoutes');
 const notificacoesRoutes = require('./api/routes/notificacoesRoutes');
 const analyticsRoutes = require('./api/routes/analyticsRoutes');
-const contratosRoutes = require('./api/routes/contratosRoutes');
 const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
 const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 const lgpdRoutes = require('./api/routes/lgpdRoutes');
@@ -299,7 +297,6 @@ app.get('/', (req, res) => {
             auditoria: '/api/auditoria',
             usuarios: '/api/usuarios',
             colaboradores: '/api/colaboradores',
-            atestados: '/api/atestados',
             escalas: '/api/escalas',
             feriados: '/api/feriados',
             configuracoes: '/api/configuracoes',
@@ -308,7 +305,6 @@ app.get('/', (req, res) => {
             dashboard: '/api/dashboard',
             notificacoes: '/api/notificacoes',
             analytics: '/api/analytics',
-            contratos: '/api/contratos',
             "primeiro-registro": '/api/primeiro-registro',
             consentimento: '/api/consentimento'
         }
@@ -401,7 +397,6 @@ app.use('/api/relatorios', reportsLimiter, relatoriosRoutes);
 
 // Rotas normais (com rate limiting global apenas)
 app.use('/api/ponto', pontoRoutes);
-app.use('/api/atestados', atestadoRoutes);
 app.use('/api/escalas', escalaRoutes);
 app.use('/api/feriados', feriadoRoutes);
 app.use('/api/frequencia', frequenciaRoutes);
@@ -416,7 +411,6 @@ app.use('/api/recovery', sensitiveEndpointsLimiter, require('./api/routes/recove
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/notificacoes', notificacoesRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/contratos', contratosRoutes);
 app.use('/api/primeiro-registro', primeiroRegistroRoutes);
 app.use('/api/consentimento', consentimentoRoutes);
 app.use('/api/lgpd', lgpdRoutes);

@@ -179,7 +179,6 @@ class RBACManager extends EventEmitter {
         { name: 'timerecords', display_name: 'Registros de Ponto', category: 'core' },
         { name: 'reports', display_name: 'Relatórios', category: 'reports' },
         { name: 'schedules', display_name: 'Escalas', category: 'hr' },
-        { name: 'leaves', display_name: 'Atestados', category: 'hr' },
         { name: 'attendance', display_name: 'Frequência', category: 'hr' },
         { name: 'dashboard', display_name: 'Dashboard', category: 'core' },
         { name: 'analytics', display_name: 'Analytics', category: 'reports' },

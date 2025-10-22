@@ -45,32 +45,7 @@ const criarTabelasEssenciais = async () => {
     `);
     console.log('✅ Tabela colaboradores verificada');
 
-    // 3. Criar tabela contratos (se não existir)
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS contratos (
-        id SERIAL PRIMARY KEY,
-        nome VARCHAR(255) NOT NULL,
-        cliente VARCHAR(255) NOT NULL,
-        localizacao VARCHAR(255),
-        valor DECIMAL(15,2) DEFAULT 0,
-        vigencia_inicio DATE,
-        vigencia_fim DATE,
-        status VARCHAR(50) DEFAULT 'Ativo',
-        descricao TEXT,
-        responsavel VARCHAR(255),
-        numero_contrato VARCHAR(100),
-        objeto TEXT,
-        coordenadas_latitude DECIMAL(10,8),
-        coordenadas_longitude DECIMAL(11,8),
-        criado_por INTEGER,
-        atualizado_por INTEGER,
-        criado_em TIMESTAMP DEFAULT NOW(),
-        atualizado_em TIMESTAMP DEFAULT NOW()
-      )
-    `);
-    console.log('✅ Tabela contratos verificada');
-
-    // 4. Criar tabela registros_ponto (para o módulo relatórios)
+    // 3. Criar tabela registros_ponto (para o módulo relatórios)
     await db.query(`
       CREATE TABLE IF NOT EXISTS registros_ponto (
         id SERIAL PRIMARY KEY,
@@ -142,19 +117,6 @@ const criarTabelasEssenciais = async () => {
         ('Pedro Oliveira', '11111111111', '11111111111', 'pedro@fgservices.com', '123456', '1992-12-03', false)
       `);
       console.log('✅ Colaboradores de exemplo criados (sem face cadastrada)');
-    }
-
-    // 9. Criar contratos de exemplo (se não existirem)
-    const contratosExist = await db.query('SELECT COUNT(*) as count FROM contratos');
-    
-    if (parseInt(contratosExist.rows[0].count) === 0) {
-      await db.query(`
-        INSERT INTO contratos (nome, cliente, localizacao, valor, vigencia_inicio, vigencia_fim, status) VALUES 
-        ('Contrato Segurança SP', 'Empresa A', 'São Paulo - SP', 50000.00, '2024-01-01', '2024-12-31', 'Ativo'),
-        ('Contrato Limpeza RJ', 'Empresa B', 'Rio de Janeiro - RJ', 30000.00, '2024-06-01', '2025-05-31', 'Ativo'),
-        ('Contrato Vigilância MG', 'Empresa C', 'Belo Horizonte - MG', 25000.00, '2024-03-01', '2024-08-31', 'Próximo do vencimento')
-      `);
-      console.log('✅ Contratos de exemplo criados');
     }
 
     console.log('🎉 Schema do banco aplicado com sucesso!');

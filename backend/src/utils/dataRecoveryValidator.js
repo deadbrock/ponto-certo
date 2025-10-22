@@ -465,7 +465,7 @@ class DataRecoveryValidator {
         WHERE table_schema = $1
       `, [testDbConfig.schema]);
 
-      const expectedTables = ['usuarios', 'colaboradores', 'registros_ponto', 'contratos'];
+      const expectedTables = ['usuarios', 'colaboradores', 'registros_ponto'];
       const actualTables = tables.rows.map(row => row.table_name);
       const missingTables = expectedTables.filter(table => !actualTables.includes(table));
 

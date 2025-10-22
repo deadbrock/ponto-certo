@@ -51,8 +51,6 @@ const FIELD_CLASSIFICATIONS = {
   'cpf': DATA_CLASSIFICATIONS.SENSIVEL,
   'rg': DATA_CLASSIFICATIONS.SENSIVEL,
   'data_nascimento': DATA_CLASSIFICATIONS.SENSIVEL,
-  'motivo': DATA_CLASSIFICATIONS.SENSIVEL, // atestados médicos
-  'arquivo_anexo': DATA_CLASSIFICATIONS.SENSIVEL, // atestados
   
   // Dados Confidenciais (Pessoais)
   'nome': DATA_CLASSIFICATIONS.CONFIDENCIAL,
@@ -132,7 +130,7 @@ class DataClassifier {
     // Padrões para dados sensíveis
     if (fieldName.includes('cpf') || fieldName.includes('rg') || 
         fieldName.includes('nascimento') || fieldName.includes('saude') ||
-        fieldName.includes('medico') || fieldName.includes('atestado')) {
+        fieldName.includes('medico')) {
       return DATA_CLASSIFICATIONS.SENSIVEL;
     }
     

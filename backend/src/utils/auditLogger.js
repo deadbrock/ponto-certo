@@ -180,7 +180,6 @@ class AuditLogger {
     
     if (urlLower.includes('/usuarios')) return 'usuario';
     if (urlLower.includes('/colaboradores')) return 'colaborador';
-    if (urlLower.includes('/contratos')) return 'contrato';
     if (urlLower.includes('/face')) return 'biometric_data';
     if (urlLower.includes('/ponto')) return 'registro_ponto';
     if (urlLower.includes('/relatorios')) return 'relatorio';

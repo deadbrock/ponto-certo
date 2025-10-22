@@ -13,13 +13,16 @@ const listarAtestados = async (req, res) => {
             SELECT 
                 a.id,
                 a.colaborador_id,
-                a.tipo_atestado,
+                a.tipo,
                 a.data_inicio,
                 a.data_fim,
-                a.motivo,
+                a.dias_afastamento,
+                a.cid,
+                a.observacao,
+                a.arquivo_url,
                 a.status,
-                a.observacoes,
-                a.arquivo_anexo,
+                a.aprovado_por,
+                a.data_aprovacao,
                 a.criado_em,
                 a.atualizado_em,
                 c.nome as colaborador_nome,
@@ -96,20 +99,22 @@ const criarAtestado = async (req, res) => {
     try {
         const {
             colaborador_id,
-            tipo_atestado,
+            tipo,
             data_inicio,
             data_fim,
-            motivo,
-            observacoes
+            dias_afastamento,
+            cid,
+            observacao,
+            arquivo_url
         } = req.body;
 
         console.log(`[${new Date()}] Criando atestado para colaborador ${colaborador_id}`);
 
         // Validações
-        if (!colaborador_id || !tipo_atestado || !data_inicio || !motivo) {
+        if (!colaborador_id || !tipo || !data_inicio || !data_fim) {
             return res.status(400).json({
                 success: false,
-                error: 'Colaborador, tipo, data de início e motivo são obrigatórios'
+                error: 'Colaborador, tipo, data de início e data de fim são obrigatórios'
             });
         }
 
@@ -126,16 +131,16 @@ const criarAtestado = async (req, res) => {
 
         const query = `
             INSERT INTO atestados (
-                colaborador_id, tipo_atestado, data_inicio, data_fim,
-                motivo, observacoes, status
+                colaborador_id, tipo, data_inicio, data_fim,
+                dias_afastamento, cid, observacao, arquivo_url, status
             )
-            VALUES ($1, $2, $3, $4, $5, $6, 'pendente')
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pendente')
             RETURNING *
         `;
 
         const values = [
-            colaborador_id, tipo_atestado, data_inicio, data_fim || data_inicio,
-            motivo, observacoes
+            colaborador_id, tipo, data_inicio, data_fim,
+            dias_afastamento || null, cid || null, observacao || null, arquivo_url || null
         ];
 
         const result = await db.query(query, values);
@@ -159,7 +164,8 @@ const criarAtestado = async (req, res) => {
 const atualizarStatusAtestado = async (req, res) => {
     try {
         const { id } = req.params;
-        const { status, observacoes_aprovacao } = req.body;
+        const { status, observacao } = req.body;
+        const usuario_id = req.user?.id || null;
 
         console.log(`[${new Date()}] Atualizando status do atestado ${id} para ${status}`);
 
@@ -177,13 +183,15 @@ const atualizarStatusAtestado = async (req, res) => {
         const query = `
             UPDATE atestados SET
                 status = $1,
-                observacoes_aprovacao = $2,
+                observacao = COALESCE($2, observacao),
+                aprovado_por = $3,
+                data_aprovacao = CASE WHEN $1 IN ('aprovado', 'rejeitado') THEN CURRENT_TIMESTAMP ELSE data_aprovacao END,
                 atualizado_em = CURRENT_TIMESTAMP
-            WHERE id = $3
+            WHERE id = $4
             RETURNING *
         `;
 
-        const result = await db.query(query, [status, observacoes_aprovacao, id]);
+        const result = await db.query(query, [status, observacao, usuario_id, id]);
 
         return res.status(200).json({
             success: true,

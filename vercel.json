@@ -1,17 +1,12 @@
 {
-  "framework": "create-react-app",
-  "buildCommand": "npm run build",
-  "outputDirectory": "build",
+  "buildCommand": "cd painel-web && npm install --legacy-peer-deps && npm run build",
+  "outputDirectory": "painel-web/build",
+  "installCommand": "cd painel-web && npm install --legacy-peer-deps",
+  "framework": null,
   "env": {
-    "REACT_APP_BACKEND_URL": "https://pontodigital-production.up.railway.app/api",
+    "REACT_APP_BACKEND_URL": "https://pontodigitalclean-production.up.railway.app/api",
     "GENERATE_SOURCEMAP": "false",
-    "CI": "false"
-  },
-  "build": {
-    "env": {
-      "REACT_APP_BACKEND_URL": "https://pontodigital-production.up.railway.app/api",
-      "GENERATE_SOURCEMAP": "false",
-      "CI": "false"
-    }
+    "CI": "false",
+    "NODE_OPTIONS": "--openssl-legacy-provider"
   }
 } 

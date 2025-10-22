@@ -126,6 +126,7 @@ const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 const lgpdRoutes = require('./api/routes/lgpdRoutes');
 const suporteRoutes = require('./api/routes/suporteRoutes');
 const integracoesRoutes = require('./api/routes/integracoesRoutes');
+const exportacaoDominioRoutes = require('./api/routes/exportacaoDominioRoutes');
 // const corsRoutes = require('./api/routes/corsRoutes'); // TEMPORARIAMENTE DESABILITADO
 
 const app = express();
@@ -417,6 +418,7 @@ app.use('/api/consentimento', consentimentoRoutes);
 app.use('/api/lgpd', lgpdRoutes);
 app.use('/api/suporte', apiLimiter, suporteRoutes);
 app.use('/api/integracoes', apiLimiter, integracoesRoutes);
+app.use('/api/exportar-dominio', exportacaoDominioRoutes);
 // app.use('/api/cors', corsRoutes); // TEMPORARIAMENTE DESABILITADO
 
 app.get('/db-test', async (req, res) => {

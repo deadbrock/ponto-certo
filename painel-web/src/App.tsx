@@ -23,6 +23,7 @@ import CalendarioPage from './pages/CalendarioPage';
 import ConfiguracoesNotificacoes from './pages/ConfiguracoesNotificacoes';
 import ContratosPage from './pages/ContratosPage';
 import ContratoDetalhesPage from './pages/ContratoDetalhesPage';
+import ExportarDominioPage from './pages/ExportarDominioPage';
 // Módulos de mapa e teste excel removidos
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -212,6 +213,7 @@ const AppContent: React.FC = () => {
             <Route path="/integracoes" element={<IntegracoesPage />} />
             <Route path="/contratos" element={<ContratosPage />} />
             <Route path="/contratos/:id" element={<ContratoDetalhesPage />} />
+            <Route path="/exportar-dominio" element={<ExportarDominioPage />} />
             <Route path="/configuracoes-infra" element={<ConfiguracoesInfraPage />} />
             <Route path="/configuracoes-notificacoes" element={<ConfiguracoesNotificacoes />} />
             <Route path="/suporte" element={<SuportePage />} />

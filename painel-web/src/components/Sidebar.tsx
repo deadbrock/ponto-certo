@@ -28,6 +28,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DescriptionIcon from '@mui/icons-material/Description';
 import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -139,6 +140,16 @@ const Sidebar: React.FC = () => {
           >
             <ListItemIcon><IntegrationInstructionsIcon /></ListItemIcon>
             <ListItemText primary="Integrações" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            component={Link}
+            to="/exportar-dominio"
+            selected={location.pathname === '/exportar-dominio'}
+          >
+            <ListItemIcon><FileDownloadIcon /></ListItemIcon>
+            <ListItemText primary="Exportar Domínio" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>

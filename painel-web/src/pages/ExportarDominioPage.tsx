@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify';
+import { useToast } from '../contexts/ToastContext';
 
 interface RegistroDominio {
   codigoEmpregado: number;
@@ -9,6 +9,7 @@ interface RegistroDominio {
 }
 
 const ExportarDominioPage: React.FC = () => {
+  const { showSuccess, showError } = useToast();
   const [competencia, setCompetencia] = useState('');
   const [mes, setMes] = useState('');
   const [ano, setAno] = useState('');
@@ -53,17 +54,17 @@ const ExportarDominioPage: React.FC = () => {
     try {
       // Validações
       if (!competencia || competencia.length !== 6) {
-        toast.error('Informe uma competência válida (AAAAMM)');
+        showError('Informe uma competência válida (AAAAMM)');
         return;
       }
 
       if (!codigoEmpresa || parseInt(codigoEmpresa) <= 0) {
-        toast.error('Informe um código de empresa válido');
+        showError('Informe um código de empresa válido');
         return;
       }
 
       if (registros.length === 0) {
-        toast.error('Adicione pelo menos um registro');
+        showError('Adicione pelo menos um registro');
         return;
       }
 
@@ -71,7 +72,7 @@ const ExportarDominioPage: React.FC = () => {
       for (let i = 0; i < registros.length; i++) {
         const reg = registros[i];
         if (!reg.codigoEmpregado || !reg.codigoRubrica || reg.valor === undefined) {
-          toast.error(`Registro ${i + 1}: preencha todos os campos`);
+          showError(`Registro ${i + 1}: preencha todos os campos`);
           return;
         }
       }
@@ -109,28 +110,28 @@ const ExportarDominioPage: React.FC = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast.success('✅ Arquivo gerado com sucesso!');
+      showSuccess('✅ Arquivo gerado com sucesso!');
       console.log('✅ Download concluído');
 
     } catch (error: any) {
       console.error('❌ Erro ao gerar arquivo:', error);
       
       if (error.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
+        showError('Sessão expirada. Faça login novamente.');
       } else if (error.response?.data) {
         // Tentar ler a mensagem de erro do blob
         const reader = new FileReader();
         reader.onload = () => {
           try {
             const errorData = JSON.parse(reader.result as string);
-            toast.error(errorData.erro || 'Erro ao gerar arquivo');
+            showError(errorData.erro || 'Erro ao gerar arquivo');
           } catch {
-            toast.error('Erro ao gerar arquivo');
+            showError('Erro ao gerar arquivo');
           }
         };
         reader.readAsText(error.response.data);
       } else {
-        toast.error('Erro ao gerar arquivo. Tente novamente.');
+        showError('Erro ao gerar arquivo. Tente novamente.');
       }
     } finally {
       setCarregando(false);

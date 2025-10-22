@@ -125,6 +125,8 @@ const contratosRoutes = require('./api/routes/contratosRoutes');
 const primeiroRegistroRoutes = require('./api/routes/primeiroRegistroRoutes');
 const consentimentoRoutes = require('./api/routes/consentimentoRoutes');
 const lgpdRoutes = require('./api/routes/lgpdRoutes');
+const suporteRoutes = require('./api/routes/suporteRoutes');
+const integracoesRoutes = require('./api/routes/integracoesRoutes');
 // const corsRoutes = require('./api/routes/corsRoutes'); // TEMPORARIAMENTE DESABILITADO
 
 const app = express();
@@ -418,6 +420,8 @@ app.use('/api/contratos', contratosRoutes);
 app.use('/api/primeiro-registro', primeiroRegistroRoutes);
 app.use('/api/consentimento', consentimentoRoutes);
 app.use('/api/lgpd', lgpdRoutes);
+app.use('/api/suporte', apiLimiter, suporteRoutes);
+app.use('/api/integracoes', apiLimiter, integracoesRoutes);
 // app.use('/api/cors', corsRoutes); // TEMPORARIAMENTE DESABILITADO
 
 app.get('/db-test', async (req, res) => {

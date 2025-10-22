@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { loginApi, UsuarioBackend } from '../services/api';
-import sessionManager from '../utils/sessionManager';
 
 export type Perfil = 'administrador' | 'Administrador' | 'Gestor' | 'RH';
 
@@ -20,26 +19,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [usuario, setUsuario] = useState<UsuarioBackend | null>(null);
   const [loginAttempts, setLoginAttempts] = useState<number>(0);
   const [loginInFlight, setLoginInFlight] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Configurar callbacks do SessionManager
-    sessionManager.setCallbacks(
-      () => {
-        // Callback de logout por timeout
-        console.log('🕐 AuthContext: Logout automático por timeout');
-        handleLogout();
-      },
-      (newToken: string) => {
-        // Callback de renovação de token
-        console.log('🔄 AuthContext: Token renovado automaticamente');
-        localStorage.setItem('token', newToken);
-      }
-    );
-
-    return () => {
-      sessionManager.cleanup();
-    };
-  }, []);
 
   const login = async (email: string, senha: string) => {
     try {
@@ -70,14 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('token', res.token);
         setUsuario(res.usuario);
         
-        // Inicializar SessionManager com dados da sessão
-        if (res.session) {
-          await sessionManager.initializeSession(res.session);
-        }
-        
         console.log('💾 Token salvo no localStorage');
         console.log('🔄 Estado do usuário atualizado');
-        console.log('🕐 SessionManager inicializado');
         console.log('🎯 Redirecionamento deve acontecer automaticamente agora!');
         
         // resetar backoff
@@ -102,7 +75,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleLogout = () => {
     setUsuario(null);
     localStorage.removeItem('token');
-    sessionManager.cleanup();
   };
 
   const logout = () => {

@@ -35,6 +35,7 @@ export interface LoginResponse {
   token: string;
   usuario: UsuarioBackend;
   message?: string;
+  session?: any;
 }
 
 export const loginApi = async (email: string, senha: string): Promise<LoginResponse> => {
